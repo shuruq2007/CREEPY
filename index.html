@@ -150,6 +150,9 @@
         <button class="unlock-btn" onclick="unlockAudio()">
             🔊 CLICK HERE TO UNLOCK AUDIO 🔊
         </button>
+        <button onclick="nuclearAudioFix()" style="background:#990000; margin:10px;">
+    💀 NUCLEAR OPTION - FORCE AUDIO 💀
+</button>
         
         <p class="warning">Then tap the creepy face to hear: <strong>"RAYANE, I'M UNDER YOUR BED!"</strong></p>
         <p style="color:#666; margin-top: 30px;">Volume: <input type="range" id="volumeSlider" min="0" max="100" value="50"></p>
@@ -444,6 +447,31 @@
         
         console.log("Screaming Tom Game Loaded!");
         console.log("Click the UNLOCK AUDIO button to start!");
+        // NUCLEAR OPTION - Force audio to work
+function nuclearAudioFix() {
+    // Create 10 different audio elements
+    for (let i = 0; i < 10; i++) {
+        const audio = new Audio();
+        audio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEAQB8AAEAfAAABAAgAZGF0YQ';
+        audio.volume = 0.0001;
+        audio.play().catch(() => {});
+    }
+    
+    // Try to create AudioContext
+    try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AudioContext();
+        const oscillator = ctx.createOscillator();
+        oscillator.connect(ctx.destination);
+        oscillator.start();
+        oscillator.stop(ctx.currentTime + 0.001);
+    } catch (e) {}
+    
+    alert("Audio forcefully unlocked! Try now.");
+    audioUnlocked = true;
+    document.getElementById('unlockScreen').style.display = 'none';
+    document.getElementById('gameScreen').style.display = 'block';
+}
     </script>
 </body>
 </html>
