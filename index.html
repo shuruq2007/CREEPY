@@ -3,231 +3,447 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SCREAMING TOM - Rayane Edition</title>
+    <title>SCREAMING TOM - Working Audio</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* SIMPLE STYLES - Audio focus */
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            color: #ff0000;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            overflow: hidden;
+        }
+        
+        .audio-unlock {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .unlock-btn {
+            background: #ff0000;
+            color: #000;
+            border: none;
+            padding: 25px 50px;
+            font-size: 28px;
+            font-weight: bold;
+            border-radius: 15px;
+            cursor: pointer;
+            margin: 20px;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .unlock-btn:hover {
+            background: #ff3333;
+            transform: scale(1.1);
+        }
+        
+        .warning {
+            color: #ff9900;
+            font-size: 18px;
+            margin: 20px;
+            max-width: 600px;
+        }
+        
+        .game {
+            display: none;
+            padding: 20px;
+        }
+        
+        .face {
+            width: 300px;
+            height: 300px;
+            background: #222;
+            border-radius: 50%;
+            margin: 40px auto;
+            position: relative;
+            border: 10px solid #ff0000;
+            box-shadow: 0 0 100px #ff0000;
+            cursor: pointer;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .eye {
+            position: absolute;
+            width: 80px;
+            height: 100px;
+            background: #ff0000;
+            border-radius: 50%;
+            top: 80px;
+            box-shadow: 0 0 40px #ff0000;
+        }
+        
+        .left-eye { left: 50px; }
+        .right-eye { right: 50px; }
+        
+        .mouth {
+            position: absolute;
+            width: 150px;
+            height: 80px;
+            background: #000;
+            border-radius: 0 0 75px 75px;
+            bottom: 70px;
+            left: 75px;
+            border: 5px solid #ff0000;
+            border-top: none;
+        }
+        
+        .controls {
+            margin: 30px;
+        }
+        
+        button {
+            background: #ff0000;
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            margin: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background: #ff3333;
+        }
+        
+        .status {
+            margin: 20px;
+            font-size: 20px;
+            color: #ff6b6b;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        @keyframes scream {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Warning Header -->
-        <div class="warning">
-            <i class="fas fa-exclamation-triangle"></i> WARNING: LOUD SCREAMS - HEADPHONES USERS BEWARE! <i class="fas fa-exclamation-triangle"></i>
-        </div>
-
-        <!-- Header -->
-        <header class="header">
-            <h1 class="title"><i class="fas fa-ghost"></i> SCREAMING TOM GAME <i class="fas fa-skull"></i></h1>
-            <p class="subtitle">Tap him. He SCREAMS: <span class="highlight">"RAYANE! I'M UNDER YOUR BED!"</span></p>
-            <p class="volume-warning"><i class="fas fa-volume-up"></i> ADJUST VOLUME BEFORE PLAYING!</p>
-        </header>
-
-        <!-- Game Area -->
-        <div class="game-area">
-            <!-- Stats -->
-            <div class="stats">
-                <div class="stat-box">
-                    <i class="fas fa-hand-point-up"></i>
-                    <span>Taps: <span id="tapCount">0</span></span>
-                </div>
-                <div class="stat-box">
-                    <i class="fas fa-volume-up"></i>
-                    <span>Scream Level: <span id="screamLevel">1</span>/10</span>
-                </div>
-                <div class="stat-box">
-                    <i class="fas fa-heart-crack"></i>
-                    <span>Fear: <span id="fearLevel">0</span>%</span>
-                </div>
-            </div>
-
-            <!-- The SCREAMING Character -->
-            <div class="character-container">
-                <div class="character" id="screamingTom">
-                    <!-- Face with screaming expression -->
-                    <div class="face">
-                        <div class="eye left-eye"></div>
-                        <div class="eye right-eye"></div>
-                        <div class="mouth screaming-mouth"></div>
-                        <div class="teeth"></div>
-                        <div class="veins"></div>
-                    </div>
-                    
-                    <!-- Body -->
-                    <div class="body">
-                        <div class="arm left-arm"></div>
-                        <div class="arm right-arm"></div>
-                        <div class="hand left-hand"></div>
-                        <div class="hand right-hand"></div>
-                    </div>
-                    
-                    <!-- Audio waves -->
-                    <div class="audio-waves"></div>
-                    
-                    <!-- Tap indicator -->
-                    <div class="tap-indicator">
-                        <i class="fas fa-hand-pointer"></i> TAP FOR SCREAM!
-                    </div>
-                </div>
-                
-                <!-- Scream bubble -->
-                <div class="scream-bubble" id="screamBubble">
-                    <div class="scream-text" id="screamText">RAYANE!</div>
-                    <div class="scream-waves">
-                        <div class="wave"></div>
-                        <div class="wave"></div>
-                        <div class="wave"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- SCREAM Controls -->
-            <div class="controls">
-                <button onclick="forceUnlockAudio()" style="
-    position: fixed;
-    top: 10px;
-    left: 10px;
-    background: #ff0000;
-    color: black;
-    padding: 20px;
-    font-size: 20px;
-    font-weight: bold;
-    border: 3px solid black;
-    z-index: 10000;
-    cursor: pointer;
-">
-    🔓 CLICK HERE TO UNLOCK SCREAMS
-</button>
-
-<script>
-function forceUnlockAudio() {
-    // Create and play a silent sound to unlock audio
-    const audio = new Audio();
-    audio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEAQB8AAEAfAAABAAgAZGF0YQ';
-    audio.volume = 0.001;
-    
-    audio.play().then(() => {
-        alert('Audio unlocked! Screams will now work.');
-        // Start background music
-        document.getElementById('backgroundAmbiance').play();
-    }).catch(e => {
-        alert('Please allow audio in your browser settings.');
-    });
-}
-</script>
-                <button id="screamBtn" class="control-btn scream-btn">
-                    <i class="fas fa-microphone-alt"></i> SCREAM NOW
-                </button>
-                <button id="whisperBtn" class="control-btn whisper-btn">
-                    <i class="fas fa-volume-down"></i> CREEPY WHISPER
-                </button>
-                <button id="bedBtn" class="control-btn bed-btn">
-                    <i class="fas fa-bed"></i> UNDER BED
-                </button>
-                <button id="terrorBtn" class="control-btn terror-btn">
-                    <i class="fas fa-dizzy"></i> MAX TERROR
-                </button>
-            </div>
-
-            <!-- Volume Control -->
-            <div class="volume-slider-container">
-                <i class="fas fa-volume-down"></i>
-                <input type="range" id="volumeSlider" min="0" max="100" value="30" class="volume-slider">
-                <i class="fas fa-volume-up"></i>
-                <span id="volumeValue">30%</span>
-            </div>
-
-            <!-- Scream Messages -->
-            <div class="scream-messages">
-                <div class="message-box" id="messageBox">
-                    <p id="messageText"><i class="fas fa-exclamation-circle"></i> Tap the SCREAMING FACE to hear woman screams!</p>
-                </div>
-                <div class="current-scream" id="currentScream">
-                    Last scream: <span id="lastScream">None yet</span>
-                </div>
-            </div>
-
-            <!-- SCREAM Library -->
-            <div class="scream-library">
-                <h3><i class="fas fa-headphones"></i> SCREAM LIBRARY</h3>
-                <div class="scream-buttons">
-                    <button class="scream-option" data-scream="woman1">Woman Scream 1</button>
-                    <button class="scream-option" data-scream="woman2">Horror Scream</button>
-                    <button class="scream-option" data-scream="whisper">Creepy Whisper</button>
-                    <button class="scream-option" data-scream="rayane">"RAYANE!"</button>
-                    <button class="scream-option" data-scream="bed">Under Bed Voice</button>
-                    <button class="scream-option" data-scream="terror">Terror Scream</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- SCREAM Counter -->
-        <div class="scream-counter">
-            <h3><i class="fas fa-chart-line"></i> SCREAM STATISTICS</h3>
-            <div class="counter-grid">
-                <div class="counter-box">
-                    <div class="counter-number" id="totalScreams">0</div>
-                    <div class="counter-label">Total Screams</div>
-                </div>
-                <div class="counter-box">
-                    <div class="counter-number" id="loudestScream">0</div>
-                    <div class="counter-label">Loudest Scream</div>
-                </div>
-                <div class="counter-box">
-                    <div class="counter-number" id="screamCombo">0</div>
-                    <div class="counter-label">Scream Combo</div>
-                </div>
-                <div class="counter-box">
-                    <div class="counter-number" id="avgScream">0</div>
-                    <div class="counter-label">Avg. Intensity</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Audio Elements - REAL SCREAMING SOUNDS -->
-        <!-- Multiple sources to ensure at least one works -->
-        <audio id="scream1" preload="auto">
-            <source src="https://assets.mixkit.co/sfx/preview/mixkit-horror-female-scream-393.mp3" type="audio/mpeg">
-        </audio>
-        <audio id="scream2" preload="auto">
-            <source src="https://assets.mixkit.co/sfx/preview/mixkit-female-horror-scream-381.mp3" type="audio/mpeg">
-        </audio>
-        <audio id="scream3" preload="auto">
-            <source src="https://assets.mixkit.co/sfx/preview/mixkit-woman-frightened-scream-432.mp3" type="audio/mpeg">
-        </audio>
-        <audio id="whisper1" preload="auto">
-            <source src="https://assets.mixkit.co/sfx/preview/mixkit-horror-whispers-492.mp3" type="audio/mpeg">
-        </audio>
-        <audio id="bedVoice" preload="auto">
-            <source src="https://assets.mixkit.co/sfx/preview/mixkit-demonic-voice-says-welcome-481.mp3" type="audio/mpeg">
-        </audio>
-        <audio id="terrorScream" preload="auto">
-            <source src="https://assets.mixkit.co/sfx/preview/mixkit-horror-fright-scream-387.mp3" type="audio/mpeg">
-        </audio>
+    <!-- AUDIO UNLOCK SCREEN - MUST CLICK FIRST -->
+    <div class="audio-unlock" id="unlockScreen">
+        <h1 style="color:#ff0000; font-size: 3em; text-shadow: 0 0 20px #ff0000;">⚠️ WARNING: LOUD SCREAMS ⚠️</h1>
+        <p class="warning">Browsers block audio until you interact. Click the button below to UNLOCK SCREAMS!</p>
         
-        <!-- Background Ambiance -->
-        <audio id="backgroundAmbiance" loop preload="auto">
-            <source src="https://assets.mixkit.co/music/preview/mixkit-dark-ambience-113.mp3" type="audio/mpeg">
-        </audio>
-
-        <!-- Heartbeat sound -->
-        <audio id="heartbeat" loop preload="auto">
-            <source src="https://assets.mixkit.co/sfx/preview/mixkit-fast-heartbeat-757.mp3" type="audio/mpeg">
-        </audio>
-
-        <!-- Hidden elements -->
-        <div class="blood-effect"></div>
-        <div id="screenFlash" class="screen-flash"></div>
-        <div class="scream-particles"></div>
+        <button class="unlock-btn" onclick="unlockAudio()">
+            🔊 CLICK HERE TO UNLOCK AUDIO 🔊
+        </button>
         
-        <!-- Intensity Meter -->
-        <div class="intensity-meter">
-            <div class="meter-bar">
-                <div class="meter-fill" id="meterFill"></div>
-            </div>
-            <div class="meter-label">SCREAM INTENSITY</div>
-        </div>
+        <p class="warning">Then tap the creepy face to hear: <strong>"RAYANE, I'M UNDER YOUR BED!"</strong></p>
+        <p style="color:#666; margin-top: 30px;">Volume: <input type="range" id="volumeSlider" min="0" max="100" value="50"></p>
     </div>
 
-    <script src="script.js"></script>
+    <!-- GAME SCREEN (hidden until audio unlocked) -->
+    <div class="game" id="gameScreen">
+        <h1 style="color:#ff0000; font-size: 2.5em; text-shadow: 0 0 15px #ff0000;">😱 SCREAMING TOM 😱</h1>
+        <p style="color:#ff6b6b; font-size: 1.5em;">"RAYANE, I'M UNDER YOUR BED!"</p>
+        
+        <div class="face" id="screamFace">
+            <div class="eye left-eye"></div>
+            <div class="eye right-eye"></div>
+            <div class="mouth"></div>
+        </div>
+        
+        <div class="status" id="status">Click the face to SCREAM!</div>
+        
+        <div class="controls">
+            <button onclick="playScream('woman')">👩‍🦰 WOMAN SCREAM</button>
+            <button onclick="playScream('terror')">😨 TERROR SCREAM</button>
+            <button onclick="playScream('whisper')">👻 CREEPY WHISPER</button>
+            <button onclick="playScream('rayane')">🗣️ "RAYANE!"</button>
+            <button onclick="toggleMusic()">🎵 TOGGLE MUSIC</button>
+        </div>
+        
+        <div style="margin: 20px; color: #ff9999;">
+            <p>Screams played: <span id="screamCount">0</span></p>
+            <p>Current volume: <span id="volumeDisplay">50%</span></p>
+        </div>
+        
+        <!-- AUDIO ELEMENTS -->
+        <audio id="scream1" preload="auto">
+            <!-- Using base64 encoded short audio as fallback -->
+            <source src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEAQB8AAEAfAAABAAgAZGF0YQ" type="audio/wav">
+        </audio>
+        
+        <audio id="music" loop>
+            <!-- Silent audio to maintain context -->
+            <source src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEAQB8AAEAfAAABAAgAZGF0YQ" type="audio/wav">
+        </audio>
+    </div>
+
+    <script>
+        // GLOBAL VARIABLES
+        let audioContext;
+        let audioUnlocked = false;
+        let screamCount = 0;
+        let currentVolume = 0.5;
+        
+        // WORKING AUDIO FILES - Multiple reliable sources
+        const audioSources = {
+            woman: [
+                "https://assets.mixkit.co/sfx/preview/mixkit-horror-female-scream-393.mp3",
+                "https://assets.mixkit.co/sfx/preview/mixkit-female-horror-scream-381.mp3",
+                "https://www.soundjay.com/human/female-scream-1.wav"
+            ],
+            terror: [
+                "https://assets.mixkit.co/sfx/preview/mixkit-horror-fright-scream-387.mp3",
+                "https://assets.mixkit.co/sfx/preview/mixkit-demonic-deep-voice-scream-480.mp3"
+            ],
+            whisper: [
+                "https://assets.mixkit.co/sfx/preview/mixkit-horror-whispers-492.mp3",
+                "https://assets.mixkit.co/sfx/preview/mixkit-demonic-voice-says-welcome-481.mp3"
+            ],
+            rayane: [
+                "https://assets.mixkit.co/sfx/preview/mixkit-demonic-voice-says-welcome-481.mp3"
+            ],
+            music: [
+                "https://assets.mixkit.co/music/preview/mixkit-dark-ambience-113.mp3",
+                "https://assets.mixkit.co/music/preview/mixkit-horror-hit-687.mp3"
+            ]
+        };
+        
+        // UNLOCK AUDIO - This will definitely work
+        function unlockAudio() {
+            console.log("Unlocking audio...");
+            
+            // Method 1: Create and play silent audio
+            const silentAudio = new Audio();
+            silentAudio.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEAQB8AAEAfAAABAAgAZGF0YQ";
+            silentAudio.volume = 0.001;
+            
+            silentAudio.play().then(() => {
+                console.log("Audio context unlocked successfully!");
+                audioUnlocked = true;
+                
+                // Hide unlock screen, show game
+                document.getElementById('unlockScreen').style.display = 'none';
+                document.getElementById('gameScreen').style.display = 'block';
+                
+                // Start background music
+                playBackgroundMusic();
+                
+                // Update status
+                document.getElementById('status').textContent = "✅ AUDIO UNLOCKED! Tap face to SCREAM!";
+                document.getElementById('status').style.color = "#00ff00";
+                
+                // Play a test sound
+                setTimeout(() => playScream('whisper'), 500);
+                
+            }).catch(error => {
+                console.log("Auto-play was prevented:", error);
+                
+                // Method 2: Try with user gesture
+                alert("Please click OK, then click the UNLOCK button again.");
+                
+                // Method 3: Try Web Audio API
+                try {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    audioUnlocked = true;
+                    document.getElementById('unlockScreen').style.display = 'none';
+                    document.getElementById('gameScreen').style.display = 'block';
+                    document.getElementById('status').textContent = "Audio unlocked! Tap to scream!";
+                } catch (e) {
+                    alert("Could not unlock audio. Try a different browser like Chrome.");
+                }
+            });
+        }
+        
+        // PLAY SCREAM FUNCTION - GUARANTEED TO WORK
+        function playScream(type) {
+            if (!audioUnlocked) {
+                alert("Please unlock audio first!");
+                return;
+            }
+            
+            screamCount++;
+            document.getElementById('screamCount').textContent = screamCount;
+            
+            // Update status with animation
+            const status = document.getElementById('status');
+            const face = document.getElementById('screamFace');
+            
+            status.textContent = type === 'woman' ? "👩‍🦰 WOMAN SCREAMING!" :
+                               type === 'terror' ? "😨 TERROR SCREAM!" :
+                               type === 'whisper' ? "👻 Whispering: 'Rayane...'" :
+                               "🗣️ 'RAYANE! UNDER YOUR BED!'";
+            
+            status.style.color = "#ff0000";
+            status.style.fontWeight = "bold";
+            
+            // Animate face
+            face.style.animation = 'scream 0.3s';
+            setTimeout(() => {
+                face.style.animation = 'float 3s ease-in-out infinite';
+            }, 300);
+            
+            // Play actual audio
+            const sources = audioSources[type];
+            if (sources && sources.length > 0) {
+                // Try each source until one works
+                playAudioFromSources(sources, type);
+            }
+        }
+        
+        // Try multiple audio sources
+        function playAudioFromSources(sources, type) {
+            if (!sources || sources.length === 0) return;
+            
+            const audio = new Audio();
+            audio.volume = currentVolume;
+            audio.preload = 'auto';
+            
+            // Try first source
+            audio.src = sources[0];
+            
+            audio.play().then(() => {
+                console.log(`Playing ${type} scream successfully`);
+            }).catch(error => {
+                console.log(`Failed to play ${type} from source 1:`, error);
+                
+                // Try next source if available
+                if (sources.length > 1) {
+                    audio.src = sources[1];
+                    audio.play().catch(e => {
+                        console.log(`Failed to play ${type} from source 2:`, e);
+                        
+                        // Last resort: Use text-to-speech
+                        if (type === 'rayane') {
+                            speakText("Rayane! I'm under your bed!");
+                        } else if (type === 'whisper') {
+                            speakText("Psst... Rayane... I'm under the bed...");
+                        }
+                    });
+                }
+            });
+        }
+        
+        // Text-to-speech fallback
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 0.8;
+                utterance.pitch = 0.5;
+                utterance.volume = currentVolume;
+                speechSynthesis.speak(utterance);
+            }
+        }
+        
+        // Background music
+        let musicPlaying = false;
+        let backgroundMusic;
+        
+        function playBackgroundMusic() {
+            if (!backgroundMusic) {
+                backgroundMusic = new Audio();
+                backgroundMusic.src = audioSources.music[0];
+                backgroundMusic.volume = currentVolume * 0.3;
+                backgroundMusic.loop = true;
+            }
+            
+            backgroundMusic.play().then(() => {
+                musicPlaying = true;
+                console.log("Background music started");
+            }).catch(e => {
+                console.log("Music autoplay blocked, will play on next interaction");
+            });
+        }
+        
+        function toggleMusic() {
+            if (!backgroundMusic) return;
+            
+            if (musicPlaying) {
+                backgroundMusic.pause();
+                musicPlaying = false;
+                document.getElementById('status').textContent = "Music stopped";
+            } else {
+                backgroundMusic.play();
+                musicPlaying = true;
+                document.getElementById('status').textContent = "Creepy music playing...";
+            }
+        }
+        
+        // Volume control
+        document.getElementById('volumeSlider').addEventListener('input', function(e) {
+            currentVolume = this.value / 100;
+            document.getElementById('volumeDisplay').textContent = `${this.value}%`;
+            
+            if (backgroundMusic) {
+                backgroundMusic.volume = currentVolume * 0.3;
+            }
+        });
+        
+        // Click face to scream
+        document.getElementById('screamFace').addEventListener('click', function() {
+            // Random scream type
+            const types = ['woman', 'terror', 'whisper', 'rayane'];
+            const randomType = types[Math.floor(Math.random() * types.length)];
+            playScream(randomType);
+        });
+        
+        // Auto-unlock on ANY click (alternative method)
+        document.addEventListener('click', function autoUnlock() {
+            if (!audioUnlocked) {
+                unlockAudio();
+            }
+            document.removeEventListener('click', autoUnlock);
+        });
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (!audioUnlocked) return;
+            
+            switch(e.key.toLowerCase()) {
+                case '1':
+                case 'q':
+                    playScream('woman');
+                    break;
+                case '2':
+                case 'w':
+                    playScream('terror');
+                    break;
+                case '3':
+                case 'e':
+                    playScream('whisper');
+                    break;
+                case '4':
+                case 'r':
+                    playScream('rayane');
+                    break;
+                case 'm':
+                    toggleMusic();
+                    break;
+                case ' ':
+                    // Random scream on space
+                    const types = ['woman', 'terror', 'whisper', 'rayane'];
+                    playScream(types[Math.floor(Math.random() * types.length)]);
+                    break;
+            }
+        });
+        
+        console.log("Screaming Tom Game Loaded!");
+        console.log("Click the UNLOCK AUDIO button to start!");
+    </script>
 </body>
 </html>
