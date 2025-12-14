@@ -3,90 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Creepy Message</title>
+    <title>Creepy Tom Game - Rayane Edition</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Eater&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
-        <!-- Glitch text effect -->
-        <div class="glitch-container">
-            <h1 class="glitch" data-text="RAYANE">RAYANE</h1>
-            <h2 class="subtitle">I'M UNDER YOUR BED</h2>
-            <p class="instruction">Click anywhere to hear the voice</p>
-        </div>
-        
-        <!-- Creepy face -->
-        <div class="face-container">
-            <div class="creepy-face">
-                <div class="eye left-eye"></div>
-                <div class="eye right-eye"></div>
-                <div class="mouth"></div>
-                <div class="teeth"></div>
-                <div class="glow"></div>
+        <!-- Header -->
+        <header class="header">
+            <h1 class="title"><i class="fas fa-ghost"></i> CREEPY TOM GAME <i class="fas fa-skull"></i></h1>
+            <p class="subtitle">Tap him. He repeats in a creepy voice: <span class="highlight">"Rayane, I'm under your bed"</span></p>
+        </header>
+
+        <!-- Game Area -->
+        <div class="game-area">
+            <!-- Score and Controls -->
+            <div class="stats">
+                <div class="stat-box">
+                    <i class="fas fa-hand-point-up"></i>
+                    <span>Taps: <span id="tapCount">0</span></span>
+                </div>
+                <div class="stat-box">
+                    <i class="fas fa-volume-up"></i>
+                    <span>Creep Level: <span id="creepLevel">1</span>/10</span>
+                </div>
+                <div class="stat-box">
+                    <i class="fas fa-moon"></i>
+                    <span>Time: <span id="timer">00:00</span></span>
+                </div>
+            </div>
+
+            <!-- The Creepy Tom Character -->
+            <div class="character-container">
+                <div class="character" id="creepyTom">
+                    <!-- Face -->
+                    <div class="face">
+                        <div class="eye left-eye"></div>
+                        <div class="eye right-eye"></div>
+                        <div class="mouth"></div>
+                        <div class="nose"></div>
+                        <div class="cheek left-cheek"></div>
+                        <div class="cheek right-cheek"></div>
+                    </div>
+                    
+                    <!-- Body -->
+                    <div class="body">
+                        <div class="arm left-arm"></div>
+                        <div class="arm right-arm"></div>
+                        <div class="leg left-leg"></div>
+                        <div class="leg right-leg"></div>
+                    </div>
+                    
+                    <!-- Glow effect -->
+                    <div class="glow"></div>
+                    
+                    <!-- Tap indicator -->
+                    <div class="tap-indicator">TAP ME!</div>
+                </div>
+                
+                <!-- Thought bubble -->
+                <div class="thought-bubble" id="thoughtBubble">
+                    <div class="bubble-text" id="bubbleText">...</div>
+                    <div class="bubble-tail"></div>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls">
+                <button id="tapBtn" class="control-btn tap-btn">
+                    <i class="fas fa-hand-pointer"></i> TAP HIM
+                </button>
+                <button id="voiceBtn" class="control-btn voice-btn">
+                    <i class="fas fa-microphone"></i> SAY SOMETHING
+                </button>
+                <button id="scareBtn" class="control-btn scare-btn">
+                    <i class="fas fa-ghost"></i> SCARE MODE
+                </button>
+                <button id="resetBtn" class="control-btn reset-btn">
+                    <i class="fas fa-redo"></i> RESET
+                </button>
+            </div>
+
+            <!-- Messages -->
+            <div class="messages">
+                <div class="message-box" id="messageBox">
+                    <p id="messageText">Tap the cat to hear: <strong>"Rayane, I'm under your bed"</strong></p>
+                </div>
+            </div>
+
+            <!-- Creepy Items -->
+            <div class="items">
+                <div class="item" id="bedItem" title="Click to hear under bed">
+                    <i class="fas fa-bed"></i>
+                    <span>Bed</span>
+                </div>
+                <div class="item" id="knifeItem" title="Click for creepy sound">
+                    <i class="fas fa-skull-crossbones"></i>
+                    <span>Creepy</span>
+                </div>
+                <div class="item" id="musicItem" title="Toggle music">
+                    <i class="fas fa-music"></i>
+                    <span>Music</span>
+                </div>
+                <div class="item" id="lightItem" title="Toggle lights">
+                    <i class="fas fa-lightbulb"></i>
+                    <span>Lights</span>
+                </div>
             </div>
         </div>
-        
-        <!-- Controls -->
-        <div class="controls">
-            <button id="speakBtn" class="creepy-btn">
-                🔊 HEAR VOICE
-            </button>
-            <button id="musicBtn" class="creepy-btn">
-                🎵 PLAY MUSIC
-            </button>
-            <button id="scareBtn" class="creepy-btn">
-                😱 EXTRA SCARE
-            </button>
-            <button id="darkenBtn" class="creepy-btn">
-                🌑 DARK MODE
-            </button>
+
+        <!-- Instructions -->
+        <div class="instructions">
+            <h3><i class="fas fa-info-circle"></i> HOW TO PLAY</h3>
+            <ul>
+                <li><strong>TAP</strong> the cat - He repeats in creepy voice</li>
+                <li><strong>SAY SOMETHING</strong> - He'll repeat what you say (if mic allowed)</li>
+                <li><strong>SCARE MODE</strong> - Makes him extra creepy</li>
+                <li><strong>Click items</strong> for extra effects</li>
+                <li>The more you tap, the creepier he gets!</li>
+            </ul>
         </div>
-        
-        <!-- Volume control -->
-        <div class="volume-control">
-            <label>Music Volume:</label>
-            <input type="range" id="volumeSlider" min="0" max="100" value="50">
-        </div>
-        
-        <!-- Status -->
-        <div id="status" class="status">Click PLAY MUSIC to start...</div>
-        
-        <!-- Hidden message -->
-        <div id="hiddenMessage" class="hidden-message">
-            I CAN SEE YOU...
-        </div>
-        
-        <!-- Floating particles -->
-        <div class="particles"></div>
-        
-        <!-- Audio elements -->
-        <audio id="creepyMusic" loop preload="auto">
-            <!-- Multiple fallback sources -->
+
+        <!-- Audio Elements -->
+        <audio id="creepyVoice" preload="auto">
+            <source src="https://assets.mixkit.co/sfx/preview/mixkit-creepy-laugh-385.mp3" type="audio/mpeg">
+        </audio>
+        <audio id="backgroundMusic" loop>
             <source src="https://assets.mixkit.co/music/preview/mixkit-dark-ambience-113.mp3" type="audio/mpeg">
-            <source src="https://assets.mixkit.co/music/preview/mixkit-horror-hit-687.mp3" type="audio/mpeg">
         </audio>
-        
-        <!-- Background ambiance -->
-        <audio id="ambientSound" loop preload="auto">
-            <source src="https://assets.mixkit.co/sfx/preview/mixkit-horror-ambience-493.mp3" type="audio/mpeg">
+        <audio id="tapSound">
+            <source src="https://assets.mixkit.co/sfx/preview/mixkit-retro-game-emergency-alarm-1000.mp3" type="audio/mpeg">
         </audio>
-        
-        <!-- Floating eyes -->
+        <audio id="scareSound">
+            <source src="https://assets.mixkit.co/sfx/preview/mixkit-horror-fright-scream-387.mp3" type="audio/mpeg">
+        </audio>
+
+        <!-- Hidden elements for effects -->
+        <div class="blood-drips"></div>
+        <div id="flash" class="flash"></div>
         <div class="floating-eyes"></div>
+        
+        <!-- Recording indicator -->
+        <div id="recordingIndicator" class="recording-indicator">
+            <i class="fas fa-microphone"></i> Listening...
+        </div>
     </div>
-    
-    <!-- Blood drips -->
-    <div class="drip drip1"></div>
-    <div class="drip drip2"></div>
-    <div class="drip drip3"></div>
-    
-    <!-- Flash effect -->
-    <div id="flash" class="flash"></div>
-    
-    <!-- Audio context starter (for autoplay) -->
-    <div id="audioStarter" style="display: none;"></div>
-    
+
     <script src="script.js"></script>
 </body>
 </html>
