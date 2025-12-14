@@ -82,6 +82,38 @@
 
             <!-- SCREAM Controls -->
             <div class="controls">
+                <button onclick="forceUnlockAudio()" style="
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    background: #ff0000;
+    color: black;
+    padding: 20px;
+    font-size: 20px;
+    font-weight: bold;
+    border: 3px solid black;
+    z-index: 10000;
+    cursor: pointer;
+">
+    🔓 CLICK HERE TO UNLOCK SCREAMS
+</button>
+
+<script>
+function forceUnlockAudio() {
+    // Create and play a silent sound to unlock audio
+    const audio = new Audio();
+    audio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEAQB8AAEAfAAABAAgAZGF0YQ';
+    audio.volume = 0.001;
+    
+    audio.play().then(() => {
+        alert('Audio unlocked! Screams will now work.');
+        // Start background music
+        document.getElementById('backgroundAmbiance').play();
+    }).catch(e => {
+        alert('Please allow audio in your browser settings.');
+    });
+}
+</script>
                 <button id="screamBtn" class="control-btn scream-btn">
                     <i class="fas fa-microphone-alt"></i> SCREAM NOW
                 </button>
