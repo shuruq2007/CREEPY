@@ -3,22 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Creepy Tom Game - Rayane Edition</title>
+    <title>SCREAMING TOM - Rayane Edition</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
+        <!-- Warning Header -->
+        <div class="warning">
+            <i class="fas fa-exclamation-triangle"></i> WARNING: LOUD SCREAMS - HEADPHONES USERS BEWARE! <i class="fas fa-exclamation-triangle"></i>
+        </div>
+
         <!-- Header -->
         <header class="header">
-            <h1 class="title"><i class="fas fa-ghost"></i> CREEPY TOM GAME <i class="fas fa-skull"></i></h1>
-            <p class="subtitle">Tap him. He repeats in a creepy voice: <span class="highlight">"Rayane, I'm under your bed"</span></p>
+            <h1 class="title"><i class="fas fa-ghost"></i> SCREAMING TOM GAME <i class="fas fa-skull"></i></h1>
+            <p class="subtitle">Tap him. He SCREAMS: <span class="highlight">"RAYANE! I'M UNDER YOUR BED!"</span></p>
+            <p class="volume-warning"><i class="fas fa-volume-up"></i> ADJUST VOLUME BEFORE PLAYING!</p>
         </header>
 
         <!-- Game Area -->
         <div class="game-area">
-            <!-- Score and Controls -->
+            <!-- Stats -->
             <div class="stats">
                 <div class="stat-box">
                     <i class="fas fa-hand-point-up"></i>
@@ -26,127 +32,167 @@
                 </div>
                 <div class="stat-box">
                     <i class="fas fa-volume-up"></i>
-                    <span>Creep Level: <span id="creepLevel">1</span>/10</span>
+                    <span>Scream Level: <span id="screamLevel">1</span>/10</span>
                 </div>
                 <div class="stat-box">
-                    <i class="fas fa-moon"></i>
-                    <span>Time: <span id="timer">00:00</span></span>
+                    <i class="fas fa-heart-crack"></i>
+                    <span>Fear: <span id="fearLevel">0</span>%</span>
                 </div>
             </div>
 
-            <!-- The Creepy Tom Character -->
+            <!-- The SCREAMING Character -->
             <div class="character-container">
-                <div class="character" id="creepyTom">
-                    <!-- Face -->
+                <div class="character" id="screamingTom">
+                    <!-- Face with screaming expression -->
                     <div class="face">
                         <div class="eye left-eye"></div>
                         <div class="eye right-eye"></div>
-                        <div class="mouth"></div>
-                        <div class="nose"></div>
-                        <div class="cheek left-cheek"></div>
-                        <div class="cheek right-cheek"></div>
+                        <div class="mouth screaming-mouth"></div>
+                        <div class="teeth"></div>
+                        <div class="veins"></div>
                     </div>
                     
                     <!-- Body -->
                     <div class="body">
                         <div class="arm left-arm"></div>
                         <div class="arm right-arm"></div>
-                        <div class="leg left-leg"></div>
-                        <div class="leg right-leg"></div>
+                        <div class="hand left-hand"></div>
+                        <div class="hand right-hand"></div>
                     </div>
                     
-                    <!-- Glow effect -->
-                    <div class="glow"></div>
+                    <!-- Audio waves -->
+                    <div class="audio-waves"></div>
                     
                     <!-- Tap indicator -->
-                    <div class="tap-indicator">TAP ME!</div>
+                    <div class="tap-indicator">
+                        <i class="fas fa-hand-pointer"></i> TAP FOR SCREAM!
+                    </div>
                 </div>
                 
-                <!-- Thought bubble -->
-                <div class="thought-bubble" id="thoughtBubble">
-                    <div class="bubble-text" id="bubbleText">...</div>
-                    <div class="bubble-tail"></div>
+                <!-- Scream bubble -->
+                <div class="scream-bubble" id="screamBubble">
+                    <div class="scream-text" id="screamText">RAYANE!</div>
+                    <div class="scream-waves">
+                        <div class="wave"></div>
+                        <div class="wave"></div>
+                        <div class="wave"></div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Controls -->
+            <!-- SCREAM Controls -->
             <div class="controls">
-                <button id="tapBtn" class="control-btn tap-btn">
-                    <i class="fas fa-hand-pointer"></i> TAP HIM
+                <button id="screamBtn" class="control-btn scream-btn">
+                    <i class="fas fa-microphone-alt"></i> SCREAM NOW
                 </button>
-                <button id="voiceBtn" class="control-btn voice-btn">
-                    <i class="fas fa-microphone"></i> SAY SOMETHING
+                <button id="whisperBtn" class="control-btn whisper-btn">
+                    <i class="fas fa-volume-down"></i> CREEPY WHISPER
                 </button>
-                <button id="scareBtn" class="control-btn scare-btn">
-                    <i class="fas fa-ghost"></i> SCARE MODE
+                <button id="bedBtn" class="control-btn bed-btn">
+                    <i class="fas fa-bed"></i> UNDER BED
                 </button>
-                <button id="resetBtn" class="control-btn reset-btn">
-                    <i class="fas fa-redo"></i> RESET
+                <button id="terrorBtn" class="control-btn terror-btn">
+                    <i class="fas fa-dizzy"></i> MAX TERROR
                 </button>
             </div>
 
-            <!-- Messages -->
-            <div class="messages">
+            <!-- Volume Control -->
+            <div class="volume-slider-container">
+                <i class="fas fa-volume-down"></i>
+                <input type="range" id="volumeSlider" min="0" max="100" value="30" class="volume-slider">
+                <i class="fas fa-volume-up"></i>
+                <span id="volumeValue">30%</span>
+            </div>
+
+            <!-- Scream Messages -->
+            <div class="scream-messages">
                 <div class="message-box" id="messageBox">
-                    <p id="messageText">Tap the cat to hear: <strong>"Rayane, I'm under your bed"</strong></p>
+                    <p id="messageText"><i class="fas fa-exclamation-circle"></i> Tap the SCREAMING FACE to hear woman screams!</p>
+                </div>
+                <div class="current-scream" id="currentScream">
+                    Last scream: <span id="lastScream">None yet</span>
                 </div>
             </div>
 
-            <!-- Creepy Items -->
-            <div class="items">
-                <div class="item" id="bedItem" title="Click to hear under bed">
-                    <i class="fas fa-bed"></i>
-                    <span>Bed</span>
-                </div>
-                <div class="item" id="knifeItem" title="Click for creepy sound">
-                    <i class="fas fa-skull-crossbones"></i>
-                    <span>Creepy</span>
-                </div>
-                <div class="item" id="musicItem" title="Toggle music">
-                    <i class="fas fa-music"></i>
-                    <span>Music</span>
-                </div>
-                <div class="item" id="lightItem" title="Toggle lights">
-                    <i class="fas fa-lightbulb"></i>
-                    <span>Lights</span>
+            <!-- SCREAM Library -->
+            <div class="scream-library">
+                <h3><i class="fas fa-headphones"></i> SCREAM LIBRARY</h3>
+                <div class="scream-buttons">
+                    <button class="scream-option" data-scream="woman1">Woman Scream 1</button>
+                    <button class="scream-option" data-scream="woman2">Horror Scream</button>
+                    <button class="scream-option" data-scream="whisper">Creepy Whisper</button>
+                    <button class="scream-option" data-scream="rayane">"RAYANE!"</button>
+                    <button class="scream-option" data-scream="bed">Under Bed Voice</button>
+                    <button class="scream-option" data-scream="terror">Terror Scream</button>
                 </div>
             </div>
         </div>
 
-        <!-- Instructions -->
-        <div class="instructions">
-            <h3><i class="fas fa-info-circle"></i> HOW TO PLAY</h3>
-            <ul>
-                <li><strong>TAP</strong> the cat - He repeats in creepy voice</li>
-                <li><strong>SAY SOMETHING</strong> - He'll repeat what you say (if mic allowed)</li>
-                <li><strong>SCARE MODE</strong> - Makes him extra creepy</li>
-                <li><strong>Click items</strong> for extra effects</li>
-                <li>The more you tap, the creepier he gets!</li>
-            </ul>
+        <!-- SCREAM Counter -->
+        <div class="scream-counter">
+            <h3><i class="fas fa-chart-line"></i> SCREAM STATISTICS</h3>
+            <div class="counter-grid">
+                <div class="counter-box">
+                    <div class="counter-number" id="totalScreams">0</div>
+                    <div class="counter-label">Total Screams</div>
+                </div>
+                <div class="counter-box">
+                    <div class="counter-number" id="loudestScream">0</div>
+                    <div class="counter-label">Loudest Scream</div>
+                </div>
+                <div class="counter-box">
+                    <div class="counter-number" id="screamCombo">0</div>
+                    <div class="counter-label">Scream Combo</div>
+                </div>
+                <div class="counter-box">
+                    <div class="counter-number" id="avgScream">0</div>
+                    <div class="counter-label">Avg. Intensity</div>
+                </div>
+            </div>
         </div>
 
-        <!-- Audio Elements -->
-        <audio id="creepyVoice" preload="auto">
-            <source src="https://assets.mixkit.co/sfx/preview/mixkit-creepy-laugh-385.mp3" type="audio/mpeg">
+        <!-- Audio Elements - REAL SCREAMING SOUNDS -->
+        <!-- Multiple sources to ensure at least one works -->
+        <audio id="scream1" preload="auto">
+            <source src="https://assets.mixkit.co/sfx/preview/mixkit-horror-female-scream-393.mp3" type="audio/mpeg">
         </audio>
-        <audio id="backgroundMusic" loop>
-            <source src="https://assets.mixkit.co/music/preview/mixkit-dark-ambience-113.mp3" type="audio/mpeg">
+        <audio id="scream2" preload="auto">
+            <source src="https://assets.mixkit.co/sfx/preview/mixkit-female-horror-scream-381.mp3" type="audio/mpeg">
         </audio>
-        <audio id="tapSound">
-            <source src="https://assets.mixkit.co/sfx/preview/mixkit-retro-game-emergency-alarm-1000.mp3" type="audio/mpeg">
+        <audio id="scream3" preload="auto">
+            <source src="https://assets.mixkit.co/sfx/preview/mixkit-woman-frightened-scream-432.mp3" type="audio/mpeg">
         </audio>
-        <audio id="scareSound">
+        <audio id="whisper1" preload="auto">
+            <source src="https://assets.mixkit.co/sfx/preview/mixkit-horror-whispers-492.mp3" type="audio/mpeg">
+        </audio>
+        <audio id="bedVoice" preload="auto">
+            <source src="https://assets.mixkit.co/sfx/preview/mixkit-demonic-voice-says-welcome-481.mp3" type="audio/mpeg">
+        </audio>
+        <audio id="terrorScream" preload="auto">
             <source src="https://assets.mixkit.co/sfx/preview/mixkit-horror-fright-scream-387.mp3" type="audio/mpeg">
         </audio>
-
-        <!-- Hidden elements for effects -->
-        <div class="blood-drips"></div>
-        <div id="flash" class="flash"></div>
-        <div class="floating-eyes"></div>
         
-        <!-- Recording indicator -->
-        <div id="recordingIndicator" class="recording-indicator">
-            <i class="fas fa-microphone"></i> Listening...
+        <!-- Background Ambiance -->
+        <audio id="backgroundAmbiance" loop preload="auto">
+            <source src="https://assets.mixkit.co/music/preview/mixkit-dark-ambience-113.mp3" type="audio/mpeg">
+        </audio>
+
+        <!-- Heartbeat sound -->
+        <audio id="heartbeat" loop preload="auto">
+            <source src="https://assets.mixkit.co/sfx/preview/mixkit-fast-heartbeat-757.mp3" type="audio/mpeg">
+        </audio>
+
+        <!-- Hidden elements -->
+        <div class="blood-effect"></div>
+        <div id="screenFlash" class="screen-flash"></div>
+        <div class="scream-particles"></div>
+        
+        <!-- Intensity Meter -->
+        <div class="intensity-meter">
+            <div class="meter-bar">
+                <div class="meter-fill" id="meterFill"></div>
+            </div>
+            <div class="meter-label">SCREAM INTENSITY</div>
         </div>
     </div>
 
