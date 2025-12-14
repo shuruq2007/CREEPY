@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creepy Message</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Eater&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Glitch text effect -->
+        <div class="glitch-container">
+            <h1 class="glitch" data-text="RAYANE">RAYANE</h1>
+            <h2 class="subtitle">I'M UNDER YOUR BED</h2>
+        </div>
+        
+        <!-- Creepy face -->
+        <div class="face-container">
+            <div class="creepy-face">
+                <div class="eye left-eye"></div>
+                <div class="eye right-eye"></div>
+                <div class="mouth"></div>
+                <div class="teeth"></div>
+                <div class="glow"></div>
+            </div>
+        </div>
+        
+        <!-- Controls -->
+        <div class="controls">
+            <button id="speakBtn" class="creepy-btn">
+                🔊 Play Voice
+            </button>
+            <button id="musicBtn" class="creepy-btn">
+                🎵 Toggle Music
+            </button>
+            <button id="scareBtn" class="creepy-btn">
+                👁️ Extra Scare
+            </button>
+        </div>
+        
+        <!-- Hidden message that appears -->
+        <div id="hiddenMessage" class="hidden-message">
+            LOOK BEHIND YOU...
+        </div>
+        
+        <!-- Floating particles for effect -->
+        <div class="particles"></div>
+        
+        <!-- Audio elements (auto-play prevented) -->
+        <audio id="creepyMusic" loop>
+            <source src="https://assets.mixkit.co/music/preview/mixkit-horror-hit-687.mp3" type="audio/mpeg">
+        </audio>
+        
+        <audio id="voiceAudio" preload="auto">
+            <source src="https://assets.mixkit.co/sfx/preview/mixkit-creepy-laugh-385.mp3" type="audio/mpeg">
+        </audio>
+        
+        <!-- Floating eyes in background -->
+        <div class="floating-eyes">
+            <div class="floating-eye"></div>
+            <div class="floating-eye"></div>
+            <div class="floating-eye"></div>
+            <div class="floating-eye"></div>
+            <div class="floating-eye"></div>
+        </div>
+    </div>
+    
+    <!-- Blood drips -->
+    <div class="drip drip1"></div>
+    <div class="drip drip2"></div>
+    <div class="drip drip3"></div>
+    
+    <!-- Flash effect -->
+    <div id="flash" class="flash"></div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
