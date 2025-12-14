@@ -1,64 +1,212 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Elements
-    const speakBtn = document.getElementById('speakBtn');
-    const musicBtn = document.getElementById('musicBtn');
-    const scareBtn = document.getElementById('scareBtn');
-    const darkenBtn = document.getElementById('darkenBtn');
-    const volumeSlider = document.getElementById('volumeSlider');
-    const status = document.getElementById('status');
-    const hiddenMessage = document.getElementById('hiddenMessage');
+    // Game state
+    const gameState = {
+        taps: 0,
+        creepLevel: 1,
+        isScareMode: false,
+        isRecording: false,
+        startTime: Date.now(),
+        lastPhrase: "Rayane, I'm under your bed"
+    };
+
+    // DOM Elements
+    const creepyTom = document.getElementById('creepyTom');
+    const tapCountEl = document.getElementById('tapCount');
+    const creepLevelEl = document.getElementById('creepLevel');
+    const timerEl = document.getElementById('timer');
+    const thoughtBubble = document.getElementById('thoughtBubble');
+    const bubbleText = document.getElementById('bubbleText');
+    const messageText = document.getElementById('messageText');
+    const recordingIndicator = document.getElementById('recordingIndicator');
     const flash = document.getElementById('flash');
-    
+
     // Audio elements
-    const creepyMusic = document.getElementById('creepyMusic');
-    const ambientSound = document.getElementById('ambientSound');
-    
-    // State
-    let musicPlaying = false;
-    let ambientPlaying = false;
-    let darkMode = false;
-    
-    // FIXED AUDIO FUNCTION - This will definitely work
-    function initializeAudio() {
-        // Preload and set volume
-        creepyMusic.volume = 0.5;
-        ambientSound.volume = 0.3;
+    const creepyVoice = document.getElementById('creepyVoice');
+    const backgroundMusic = document.getElementById('backgroundMusic');
+    const tapSound = document.getElementById('tapSound');
+    const scareSound = document.getElementById('scareSound');
+
+    // Phrases database
+    const creepyPhrases = [
+        "Rayane, I'm under your bed",
+        "I can see you sleeping",
+        "Don't look under the bed",
+        "I'm right behind you",
+        "Your bed is my home now",
+        "Shhh... go back to sleep",
+        "I watch you every night",
+        "We're closer than you think",
+        "Your shadow isn't yours",
+        "I'm in your closet too"
+    ];
+
+    // Initialize game
+    function initGame() {
+        // Start timer
+        updateTimer();
+        setInterval(updateTimer, 1000);
         
-        // Create and play a silent audio to unlock audio context
-        const unlockAudio = () => {
-            const silentAudio = new Audio();
-            silentAudio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEAQB8AAEAfAAABAAgAZGF0YQ';
-            silentAudio.play().then(() => {
-                console.log('Audio context unlocked');
-                status.textContent = 'Audio ready. Click PLAY MUSIC.';
-            }).catch(e => {
-                console.log('Audio context could not be unlocked:', e);
-            });
-        };
+        // Start background music (quiet)
+        backgroundMusic.volume = 0.2;
+        backgroundMusic.play().catch(e => {
+            console.log('Music autoplay blocked. User needs to interact first.');
+        });
         
-        // Try to unlock audio on user interaction
-        document.addEventListener('click', function unlock() {
-            unlockAudio();
-            document.removeEventListener('click', unlock);
-        }, { once: true });
+        // Create floating eyes
+        createFloatingEyes();
+        
+        // Update initial message
+        updateMessage("Tap the cat to start!");
     }
-    
-    // FIXED: Text-to-Speech that works
-    function speakCreepyMessage() {
-        status.textContent = "Speaking: 'Rayane, I'm under your bed...'";
+
+    // Update timer display
+    function updateTimer() {
+        const elapsed = Date.now() - gameState.startTime;
+        const minutes = Math.floor(elapsed / 60000);
+        const seconds = Math.floor((elapsed % 60000) / 1000);
+        timerEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    // Tap handler - MAIN GAME MECHANIC
+    creepyTom.addEventListener('click', function(e) {
+        e.stopPropagation();
+        handleTap();
+    });
+
+    // Button tap handler
+    document.getElementById('tapBtn').addEventListener('click', handleTap);
+
+    function handleTap() {
+        // Increment taps
+        gameState.taps++;
+        tapCountEl.textContent = gameState.taps;
         
-        // Method 1: Web Speech API (works in most browsers)
-        if ('speechSynthesis' in window) {
-            const utterance = new SpeechSynthesisUtterance();
-            utterance.text = "Rayane. I am under your bed.";
-            utterance.rate = 0.7;  // Slower = deeper
-            utterance.pitch = 0.3; // Lower = deeper voice
-            utterance.volume = 1;
+        // Increase creep level every 5 taps
+        if (gameState.taps % 5 === 0 && gameState.creepLevel < 10) {
+            gameState.creepLevel++;
+            creepLevelEl.textContent = gameState.creepLevel;
+            updateCreepyAppearance();
+        }
+        
+        // Play tap sound
+        playTapSound();
+        
+        // Animate character
+        animateTap();
+        
+        // Make Tom say something creepy
+        const phrase = getRandomCreepyPhrase();
+        gameState.lastPhrase = phrase;
+        speakCreepyPhrase(phrase);
+        
+        // Show in thought bubble
+        showThoughtBubble(phrase);
+        
+        // Update message
+        updateMessage(`He said: "${phrase}"`);
+        
+        // Random scare effect occasionally
+        if (Math.random() < 0.2) {
+            randomScareEffect();
+        }
+    }
+
+    // Voice recording handler
+    document.getElementById('voiceBtn').addEventListener('click', function() {
+        if (!gameState.isRecording) {
+            startVoiceRecording();
+        } else {
+            stopVoiceRecording();
+        }
+    });
+
+    // Scare mode handler
+    document.getElementById('scareBtn').addEventListener('click', function() {
+        gameState.isScareMode = !gameState.isScareMode;
+        const btn = document.getElementById('scareBtn');
+        
+        if (gameState.isScareMode) {
+            btn.innerHTML = '<i class="fas fa-skull"></i> NORMAL MODE';
+            btn.style.background = 'linear-gradient(45deg, #ff0000, #ff6b6b)';
+            updateMessage("SCARE MODE ACTIVATED! Things just got creepier...");
+            scareSound.play();
+            flashScreen();
+        } else {
+            btn.innerHTML = '<i class="fas fa-ghost"></i> SCARE MODE';
+            btn.style.background = 'linear-gradient(45deg, #330000, #8b0000)';
+            updateMessage("Back to normal... for now.");
+        }
+        
+        updateCreepyAppearance();
+    });
+
+    // Reset handler
+    document.getElementById('resetBtn').addEventListener('click', function() {
+        if (confirm("Reset the game? This will clear all taps and creep level.")) {
+            gameState.taps = 0;
+            gameState.creepLevel = 1;
+            gameState.isScareMode = false;
             
-            // Get voices and select a deep one
+            tapCountEl.textContent = '0';
+            creepLevelEl.textContent = '1';
+            
+            document.getElementById('scareBtn').innerHTML = '<i class="fas fa-ghost"></i> SCARE MODE';
+            document.getElementById('scareBtn').style.background = 'linear-gradient(45deg, #330000, #8b0000)';
+            
+            updateCreepyAppearance();
+            updateMessage("Game reset. Start tapping again!");
+            showThoughtBubble("I'm back...");
+        }
+    });
+
+    // Item click handlers
+    document.getElementById('bedItem').addEventListener('click', function() {
+        speakCreepyPhrase("*creaking bed sounds* I'm right under here...");
+        updateMessage("You checked under the bed. Bad idea.");
+    });
+
+    document.getElementById('knifeItem').addEventListener('click', function() {
+        const phrase = "I have something sharp for you...";
+        speakCreepyPhrase(phrase);
+        updateMessage("That sounded sharp and pointy!");
+        playScareSound();
+    });
+
+    document.getElementById('musicItem').addEventListener('click', function() {
+        if (backgroundMusic.paused) {
+            backgroundMusic.play();
+            updateMessage("Creepy music playing...");
+        } else {
+            backgroundMusic.pause();
+            updateMessage("Music stopped. Too quiet now...");
+        }
+    });
+
+    document.getElementById('lightItem').addEventListener('click', function() {
+        document.body.classList.toggle('lights-off');
+        if (document.body.classList.contains('lights-off')) {
+            updateMessage("Lights off! Can you see him?");
+            flashScreen(0.1);
+        } else {
+            updateMessage("Lights on. But he's still there...");
+        }
+    });
+
+    // Speak creepy phrase
+    function speakCreepyPhrase(phrase) {
+        // Use Text-to-Speech API
+        if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(phrase);
+            
+            // Make voice creepy based on creep level
+            utterance.rate = 0.7 + (gameState.creepLevel * 0.03);
+            utterance.pitch = 0.5 - (gameState.creepLevel * 0.05);
+            utterance.volume = 0.8;
+            
+            // Get available voices
             const voices = speechSynthesis.getVoices();
             if (voices.length > 0) {
-                // Try to find a male/deep voice
+                // Prefer male/deep voices
                 const deepVoice = voices.find(v => 
                     v.name.includes('Google UK English Male') || 
                     v.name.includes('Microsoft David') ||
@@ -67,353 +215,246 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (deepVoice) {
                     utterance.voice = deepVoice;
-                } else {
-                    // Use first available voice
-                    utterance.voice = voices[0];
-                    utterance.pitch = 0.1; // Make it even deeper
                 }
             }
             
             // Speak
             speechSynthesis.speak(utterance);
             
-            // Visual effects
-            animateFaceSpeaking();
-            
+            // Animate mouth while speaking
+            animateMouthSpeaking();
         } else {
-            // Fallback: Use pre-recorded audio
-            playCreepyVoice();
+            // Fallback to playing creepy sound
+            creepyVoice.currentTime = 0;
+            creepyVoice.play();
         }
     }
-    
-    function playCreepyVoice() {
-        // Create new audio each time to avoid issues
-        const voiceAudio = new Audio();
-        voiceAudio.src = 'https://assets.mixkit.co/sfx/preview/mixkit-demonic-voice-says-welcome-481.mp3';
-        voiceAudio.volume = 0.8;
-        
-        voiceAudio.play().then(() => {
-            status.textContent = "Playing creepy voice...";
-            animateFaceSpeaking();
-        }).catch(e => {
-            status.textContent = "Click the button again to hear the voice";
-            // Try with user gesture
-            speakBtn.addEventListener('click', function retry() {
-                voiceAudio.play();
-                speakBtn.removeEventListener('click', retry);
-            }, { once: true });
-        });
-    }
-    
-    function animateFaceSpeaking() {
-        const eyes = document.querySelectorAll('.eye');
-        const mouth = document.querySelector('.mouth');
-        
-        // Eyes close
-        eyes.forEach(eye => {
-            eye.style.height = '5px';
-            eye.style.transition = 'height 0.3s';
-        });
-        
-        // Mouth moves
-        mouth.style.height = '80px';
-        mouth.style.transition = 'height 0.3s';
-        
-        // Reset after 2 seconds
-        setTimeout(() => {
-            eyes.forEach(eye => {
-                eye.style.height = '80px';
-            });
-            mouth.style.height = '60px';
-        }, 2000);
-    }
-    
-    // FIXED: Music that definitely plays
-    function toggleMusic() {
-        if (!musicPlaying) {
-            // Start both music and ambient
-            creepyMusic.play().catch(e => {
-                status.textContent = "Click PLAY MUSIC again to start audio";
-                musicBtn.textContent = "🎵 CLICK TO PLAY";
-                return;
-            });
-            
-            ambientSound.play().catch(e => {
-                console.log('Ambient sound could not play');
-            });
-            
-            musicPlaying = true;
-            ambientPlaying = true;
-            musicBtn.textContent = '⏸️ PAUSE MUSIC';
-            musicBtn.style.background = '#ff0000';
-            status.textContent = 'Creepy music playing...';
-            
-        } else {
-            creepyMusic.pause();
-            ambientSound.pause();
-            musicPlaying = false;
-            ambientPlaying = false;
-            musicBtn.textContent = '🎵 PLAY MUSIC';
-            musicBtn.style.background = '#220000';
-            status.textContent = 'Music paused';
+
+    // Get random creepy phrase
+    function getRandomCreepyPhrase() {
+        if (Math.random() < 0.3 && gameState.taps > 0) {
+            // 30% chance to repeat last phrase
+            return gameState.lastPhrase;
         }
+        
+        // Otherwise random phrase
+        const index = Math.floor(Math.random() * creepyPhrases.length);
+        return creepyPhrases[index];
     }
-    
-    // Volume control
-    volumeSlider.addEventListener('input', function() {
-        const volume = this.value / 100;
-        creepyMusic.volume = volume;
-        ambientSound.volume = volume * 0.6; // Quieter ambiance
-        status.textContent = `Volume: ${this.value}%`;
+
+    // Show thought bubble
+    function showThoughtBubble(text) {
+        bubbleText.textContent = text;
+        thoughtBubble.style.opacity = '1';
         
-        // Visual feedback
-        const eyes = document.querySelectorAll('.eye');
-        const glowSize = 20 + (volume * 80); // 20-100px glow
-        
-        eyes.forEach(eye => {
-            eye.style.boxShadow = `0 0 ${glowSize}px #ff0000, inset 0 0 20px #000`;
-        });
-    });
-    
-    // Extra scare
-    function extraScare() {
-        status.textContent = "Boo! 👻";
-        
-        // Flash effect
-        flash.style.animation = 'flash 1s';
+        // Hide after 3 seconds
         setTimeout(() => {
-            flash.style.animation = '';
-        }, 1000);
-        
-        // Random screams
-        const screams = [
-            'https://assets.mixkit.co/sfx/preview/mixkit-horror-fright-scream-387.mp3',
-            'https://assets.mixkit.co/sfx/preview/mixkit-demonic-deep-voice-scream-480.mp3',
-            'https://assets.mixkit.co/sfx/preview/mixkit-horror-female-scream-393.mp3'
-        ];
-        
-        const screamAudio = new Audio(screems[Math.floor(Math.random() * screams.length)]);
-        screamAudio.volume = 0.6;
-        screamAudio.play();
-        
-        // Shake effect
-        document.body.style.animation = 'glitch 0.3s';
-        setTimeout(() => {
-            document.body.style.animation = '';
-        }, 300);
-        
-        // Hidden message
-        const messages = [
-            "LOOK BEHIND YOU...",
-            "I'M WATCHING YOU...",
-            "DON'T TURN AROUND...",
-            "I'M IN THE ROOM...",
-            "CHECK UNDER THE BED..."
-        ];
-        
-        hiddenMessage.textContent = messages[Math.floor(Math.random() * messages.length)];
-        hiddenMessage.style.opacity = '1';
-        hiddenMessage.style.transition = 'opacity 0.5s';
-        
-        setTimeout(() => {
-            hiddenMessage.style.opacity = '0';
+            thoughtBubble.style.opacity = '0';
         }, 3000);
     }
-    
-    // Dark mode
-    function toggleDarkMode() {
-        darkMode = !darkMode;
+
+    // Update message
+    function updateMessage(text) {
+        messageText.innerHTML = text;
+    }
+
+    // Animate on tap
+    function animateTap() {
+        // Bounce effect
+        creepyTom.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+            creepyTom.style.transform = 'scale(1)';
+        }, 100);
         
-        if (darkMode) {
-            document.body.style.background = '#000';
-            document.querySelector('.creepy-face').style.background = '#000';
-            document.querySelector('.creepy-face').style.boxShadow = '0 0 150px #000, inset 0 0 50px #111';
-            darkenBtn.textContent = '☀️ LIGHT MODE';
-            darkenBtn.style.background = '#444';
-            status.textContent = 'Dark mode activated...';
+        // Close eyes briefly
+        const eyes = document.querySelectorAll('.eye');
+        eyes.forEach(eye => {
+            eye.style.height = '10px';
+            setTimeout(() => {
+                eye.style.height = '70px';
+            }, 200);
+        });
+        
+        // Open mouth
+        const mouth = document.querySelector('.mouth');
+        mouth.style.height = '60px';
+        setTimeout(() => {
+            mouth.style.height = '40px';
+        }, 300);
+    }
+
+    // Animate mouth while speaking
+    function animateMouthSpeaking() {
+        const mouth = document.querySelector('.mouth');
+        let count = 0;
+        const max = 6;
+        
+        const interval = setInterval(() => {
+            mouth.style.height = count % 2 === 0 ? '60px' : '30px';
+            count++;
+            
+            if (count >= max) {
+                clearInterval(interval);
+                mouth.style.height = '40px';
+            }
+        }, 200);
+    }
+
+    // Update creepy appearance based on level
+    function updateCreepyAppearance() {
+        const face = document.querySelector('.face');
+        const eyes = document.querySelectorAll('.eye');
+        const body = document.querySelector('.body');
+        const glow = document.querySelector('.glow');
+        
+        // Calculate intensity based on creep level and scare mode
+        const intensity = gameState.isScareMode ? 
+            gameState.creepLevel * 2 : 
+            gameState.creepLevel;
+        
+        // Update colors and effects
+        const redValue = Math.min(255, 100 + (intensity * 15));
+        const glowSize = 100 + (intensity * 20);
+        
+        // Apply effects
+        face.style.boxShadow = `inset 0 0 ${30 + intensity * 5}px #000, 0 0 ${30 + intensity * 10}px rgb(${redValue}, 0, 0)`;
+        
+        eyes.forEach(eye => {
+            eye.style.background = `rgb(${redValue}, ${Math.max(0, 100 - intensity * 10)}, 0)`;
+            eye.style.boxShadow = `inset 0 0 20px #000, 0 0 ${20 + intensity * 5}px rgb(${redValue}, 0, 0)`;
+        });
+        
+        glow.style.width = `${glowSize}px`;
+        glow.style.height = `${glowSize}px`;
+        
+        // If scare mode, add shake animation
+        if (gameState.isScareMode) {
+            creepyTom.style.animation = 'shake 0.5s infinite';
         } else {
-            document.body.style.background = '#111';
-            document.querySelector('.creepy-face').style.background = '#111';
-            document.querySelector('.creepy-face').style.boxShadow = '0 0 100px #8b0000, inset 0 0 50px #330000';
-            darkenBtn.textContent = '🌑 DARK MODE';
-            darkenBtn.style.background = '#220000';
-            status.textContent = 'Normal mode';
+            creepyTom.style.animation = '';
         }
     }
-    
-    // Create particles
-    function createParticles() {
-        const particles = document.querySelector('.particles');
-        for (let i = 0; i < 30; i++) {
-            const particle = document.createElement('div');
-            particle.style.cssText = `
-                position: absolute;
-                width: ${Math.random() * 10 + 2}px;
-                height: ${Math.random() * 10 + 2}px;
-                background: #ff0000;
-                border-radius: 50%;
-                left: ${Math.random() * 100}vw;
-                top: ${Math.random() * 100}vh;
-                opacity: ${Math.random() * 0.3 + 0.1};
-                animation: float-around ${Math.random() * 20 + 10}s infinite linear;
-                z-index: 1;
-            `;
-            particles.appendChild(particle);
+
+    // Play tap sound
+    function playTapSound() {
+        tapSound.currentTime = 0;
+        tapSound.volume = 0.3;
+        tapSound.play();
+    }
+
+    // Play scare sound
+    function playScareSound() {
+        scareSound.currentTime = 0;
+        scareSound.volume = 0.5;
+        scareSound.play();
+    }
+
+    // Flash screen
+    function flashScreen(intensity = 0.7) {
+        flash.style.opacity = intensity;
+        setTimeout(() => {
+            flash.style.opacity = 0;
+        }, 200);
+    }
+
+    // Random scare effect
+    function randomScareEffect() {
+        if (Math.random() < 0.3) {
+            flashScreen(0.3);
+        }
+        
+        if (Math.random() < 0.2 && gameState.creepLevel > 3) {
+            playScareSound();
         }
     }
-    
-    // Create floating eyes
+
+    // Voice recording functions
+    function startVoiceRecording() {
+        updateMessage("Listening... say something!");
+        recordingIndicator.style.display = 'block';
+        gameState.isRecording = true;
+        
+        // In a real app, you would use the Web Audio API here
+        // For this demo, we'll simulate it
+        setTimeout(() => {
+            if (gameState.isRecording) {
+                const simulatedText = "I heard that...";
+                speakCreepyPhrase(simulatedText);
+                showThoughtBubble(simulatedText);
+                updateMessage(`He repeated: "${simulatedText}"`);
+                stopVoiceRecording();
+            }
+        }, 3000);
+    }
+
+    function stopVoiceRecording() {
+        recordingIndicator.style.display = 'none';
+        gameState.isRecording = false;
+        updateMessage("Ready for more taps!");
+    }
+
+    // Create floating eyes in background
     function createFloatingEyes() {
         const container = document.querySelector('.floating-eyes');
-        for (let i = 0; i < 8; i++) {
+        for (let i = 0; i < 12; i++) {
             const eye = document.createElement('div');
             eye.style.cssText = `
                 position: absolute;
-                width: 40px;
-                height: 40px;
-                background: #ff0000;
+                width: ${Math.random() * 40 + 20}px;
+                height: ${Math.random() * 40 + 20}px;
+                background: radial-gradient(circle, #ff0000 30%, #8b0000 70%);
                 border-radius: 50%;
-                opacity: 0.2;
+                opacity: ${Math.random() * 0.3 + 0.1};
                 left: ${Math.random() * 100}%;
                 top: ${Math.random() * 100}%;
-                animation: float-around ${Math.random() * 15 + 10}s infinite linear ${Math.random() * 5}s;
+                animation: float ${Math.random() * 10 + 10}s infinite ease-in-out ${Math.random() * 5}s;
                 box-shadow: 0 0 20px #ff0000;
             `;
             container.appendChild(eye);
         }
     }
-    
-    // Mouse tracking
-    document.addEventListener('mousemove', function(e) {
-        const eyes = document.querySelectorAll('.eye');
-        const face = document.querySelector('.face-container');
-        
-        eyes.forEach(eye => {
-            const rect = eye.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-            
-            const deltaX = e.clientX - centerX;
-            const deltaY = e.clientY - centerY;
-            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-            
-            const moveX = deltaX / 30;
-            const moveY = deltaY / 30;
-            
-            eye.style.transform = `translate(${moveX}px, ${moveY}px)`;
-        });
-        
-        // Slight face movement
-        const faceRect = face.getBoundingClientRect();
-        const faceCenterX = faceRect.left + faceRect.width / 2;
-        const faceCenterY = faceRect.top + faceRect.height / 2;
-        
-        const faceMoveX = (e.clientX - faceCenterX) / 100;
-        const faceMoveY = (e.clientY - faceCenterY) / 100;
-        
-        face.style.transform = `translate(${faceMoveX}px, ${faceMoveY}px)`;
-    });
-    
-    // Random events
-    function randomEvents() {
-        setInterval(() => {
-            if (Math.random() > 0.8) {
-                // Random flash
-                flash.style.background = Math.random() > 0.5 ? '#ff0000' : '#ffffff';
-                flash.style.opacity = '0.3';
-                flash.style.transition = 'opacity 0.5s';
-                
-                setTimeout(() => {
-                    flash.style.opacity = '0';
-                }, 200);
-                
-                // Random sound occasionally
-                if (Math.random() > 0.7 && musicPlaying) {
-                    const whisper = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-horror-whispers-492.mp3');
-                    whisper.volume = 0.2;
-                    whisper.play();
-                }
-            }
-        }, 8000);
-    }
-    
-    // Initialize everything
-    function init() {
-        initializeAudio();
-        createParticles();
-        createFloatingEyes();
-        randomEvents();
-        
-        status.textContent = "Click PLAY MUSIC to start creepy audio";
-        
-        // Auto-play music after 5 seconds if user interacts
-        setTimeout(() => {
-            if (!musicPlaying) {
-                musicBtn.style.animation = 'pulse 1s infinite';
-                musicBtn.style.border = '2px solid #ff0000';
-            }
-        }, 5000);
-    }
-    
-    // Event listeners
-    speakBtn.addEventListener('click', speakCreepyMessage);
-    musicBtn.addEventListener('click', toggleMusic);
-    scareBtn.addEventListener('click', extraScare);
-    darkenBtn.addEventListener('click', toggleDarkMode);
-    
-    // Click anywhere to speak
-    document.addEventListener('click', function(e) {
-        if (e.target === document.body || e.target === document.querySelector('.container')) {
-            speakCreepyMessage();
+
+    // Add some CSS for lights-off mode
+    const style = document.createElement('style');
+    style.textContent = `
+        .lights-off {
+            background: #000 !important;
+            filter: brightness(0.3);
         }
-    });
-    
-    // Keyboard shortcuts
-    document.addEventListener('keydown', function(e) {
-        switch(e.key.toLowerCase()) {
-            case ' ':
-            case 'v':
-                speakCreepyMessage();
-                break;
-            case 'm':
-                toggleMusic();
-                break;
-            case 's':
-                extraScare();
-                break;
-            case 'd':
-                toggleDarkMode();
-                break;
-            case 'arrowup':
-                volumeSlider.value = Math.min(100, parseInt(volumeSlider.value) + 10);
-                volumeSlider.dispatchEvent(new Event('input'));
-                break;
-            case 'arrowdown':
-                volumeSlider.value = Math.max(0, parseInt(volumeSlider.value) - 10);
-                volumeSlider.dispatchEvent(new Event('input'));
-                break;
+        
+        .lights-off .character {
+            filter: brightness(1.5) contrast(1.5);
         }
-    });
-    
-    // Initialize
-    init();
-    
-    // Instructions
+        
+        .lights-off .eye {
+            animation: none !important;
+            box-shadow: 0 0 40px #ff0000 !important;
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Load voices for speech synthesis
+    speechSynthesis.getVoices();
+    setTimeout(() => speechSynthesis.getVoices(), 1000);
+
+    // Initialize the game
+    initGame();
+
+    // Instructions in console
     console.log(`
     ========================================
-    CREEPY WEBSITE CONTROLS:
+    CREEPY TOM GAME - CONTROLS
     ========================================
-    🔊 HEAR VOICE - Plays "Rayane, I'm under your bed"
-    🎵 PLAY MUSIC - Toggles creepy background music
-    😱 EXTRA SCARE - Random jump scare
-    🌑 DARK MODE - Makes everything darker
-    
-    Keyboard Shortcuts:
-    [V] or [SPACE] - Hear voice
-    [M] - Toggle music
-    [S] - Extra scare
-    [D] - Dark mode
-    [↑]/[↓] - Volume control
+    TAP THE CAT: He repeats creepy phrases
+    SAY SOMETHING: He tries to repeat you
+    SCARE MODE: Makes everything creepier
+    ITEMS: Click for extra effects
+    ========================================
+    Built-in phrases include:
+    "Rayane, I'm under your bed"
+    "I can see you sleeping"
+    "Don't look under the bed"
+    ...and more!
     ========================================
     `);
 });
