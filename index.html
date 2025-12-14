@@ -13,6 +13,7 @@
         <div class="glitch-container">
             <h1 class="glitch" data-text="RAYANE">RAYANE</h1>
             <h2 class="subtitle">I'M UNDER YOUR BED</h2>
+            <p class="instruction">Click anywhere to hear the voice</p>
         </div>
         
         <!-- Creepy face -->
@@ -29,41 +30,50 @@
         <!-- Controls -->
         <div class="controls">
             <button id="speakBtn" class="creepy-btn">
-                🔊 Play Voice
+                🔊 HEAR VOICE
             </button>
             <button id="musicBtn" class="creepy-btn">
-                🎵 Toggle Music
+                🎵 PLAY MUSIC
             </button>
             <button id="scareBtn" class="creepy-btn">
-                👁️ Extra Scare
+                😱 EXTRA SCARE
+            </button>
+            <button id="darkenBtn" class="creepy-btn">
+                🌑 DARK MODE
             </button>
         </div>
         
-        <!-- Hidden message that appears -->
-        <div id="hiddenMessage" class="hidden-message">
-            LOOK BEHIND YOU...
+        <!-- Volume control -->
+        <div class="volume-control">
+            <label>Music Volume:</label>
+            <input type="range" id="volumeSlider" min="0" max="100" value="50">
         </div>
         
-        <!-- Floating particles for effect -->
+        <!-- Status -->
+        <div id="status" class="status">Click PLAY MUSIC to start...</div>
+        
+        <!-- Hidden message -->
+        <div id="hiddenMessage" class="hidden-message">
+            I CAN SEE YOU...
+        </div>
+        
+        <!-- Floating particles -->
         <div class="particles"></div>
         
-        <!-- Audio elements (auto-play prevented) -->
-        <audio id="creepyMusic" loop>
+        <!-- Audio elements -->
+        <audio id="creepyMusic" loop preload="auto">
+            <!-- Multiple fallback sources -->
+            <source src="https://assets.mixkit.co/music/preview/mixkit-dark-ambience-113.mp3" type="audio/mpeg">
             <source src="https://assets.mixkit.co/music/preview/mixkit-horror-hit-687.mp3" type="audio/mpeg">
         </audio>
         
-        <audio id="voiceAudio" preload="auto">
-            <source src="https://assets.mixkit.co/sfx/preview/mixkit-creepy-laugh-385.mp3" type="audio/mpeg">
+        <!-- Background ambiance -->
+        <audio id="ambientSound" loop preload="auto">
+            <source src="https://assets.mixkit.co/sfx/preview/mixkit-horror-ambience-493.mp3" type="audio/mpeg">
         </audio>
         
-        <!-- Floating eyes in background -->
-        <div class="floating-eyes">
-            <div class="floating-eye"></div>
-            <div class="floating-eye"></div>
-            <div class="floating-eye"></div>
-            <div class="floating-eye"></div>
-            <div class="floating-eye"></div>
-        </div>
+        <!-- Floating eyes -->
+        <div class="floating-eyes"></div>
     </div>
     
     <!-- Blood drips -->
@@ -73,6 +83,9 @@
     
     <!-- Flash effect -->
     <div id="flash" class="flash"></div>
+    
+    <!-- Audio context starter (for autoplay) -->
+    <div id="audioStarter" style="display: none;"></div>
     
     <script src="script.js"></script>
 </body>
