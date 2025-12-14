@@ -1,460 +1,463 @@
 document.addEventListener('DOMContentLoaded', function() {
+    console.log("🔥 SCREAMING TOM GAME LOADED - WITH REAL WOMAN SCREAMS! 🔥");
+    
     // Game state
     const gameState = {
         taps: 0,
-        creepLevel: 1,
-        isScareMode: false,
-        isRecording: false,
-        startTime: Date.now(),
-        lastPhrase: "Rayane, I'm under your bed"
+        screamLevel: 1,
+        fearLevel: 0,
+        totalScreams: 0,
+        loudestScream: 0,
+        screamCombo: 0,
+        totalScreamIntensity: 0,
+        isScreaming: false,
+        currentVolume: 0.3,
+        lastScreamType: ""
+    };
+
+    // SCREAM SOUNDS - REAL WOMAN SCREAMS
+    const screamSounds = {
+        woman1: document.getElementById('scream1'),
+        woman2: document.getElementById('scream2'),
+        woman3: document.getElementById('scream3'),
+        whisper: document.getElementById('whisper1'),
+        bed: document.getElementById('bedVoice'),
+        terror: document.getElementById('terrorScream')
+    };
+
+    // SCREAM PHRASES (displayed in bubble)
+    const screamPhrases = {
+        woman1: ["RAYANE!", "I'M HERE!", "LOOK AT ME!", "AAAAHHHH!"],
+        woman2: ["NO! NO!", "GET AWAY!", "HELP ME!", "SCREEEECH!"],
+        woman3: ["UNDER THE BED!", "I CAN SEE YOU!", "DON'T SLEEP!", "WAKE UP!"],
+        whisper: ["pssst... rayane...", "i'm under here...", "come closer...", "shhh..."],
+        bed: ["*bed creaks*", "under your bed...", "right below you...", "*scratching*"],
+        terror: ["AAAAAAAAHHHH!!!", "TERROR!", "NIGHTMARE!", "HORROR!"]
     };
 
     // DOM Elements
-    const creepyTom = document.getElementById('creepyTom');
+    const screamingTom = document.getElementById('screamingTom');
     const tapCountEl = document.getElementById('tapCount');
-    const creepLevelEl = document.getElementById('creepLevel');
-    const timerEl = document.getElementById('timer');
-    const thoughtBubble = document.getElementById('thoughtBubble');
-    const bubbleText = document.getElementById('bubbleText');
+    const screamLevelEl = document.getElementById('screamLevel');
+    const fearLevelEl = document.getElementById('fearLevel');
+    const totalScreamsEl = document.getElementById('totalScreams');
+    const loudestScreamEl = document.getElementById('loudestScream');
+    const screamComboEl = document.getElementById('screamCombo');
+    const avgScreamEl = document.getElementById('avgScream');
+    const screamBubble = document.getElementById('screamBubble');
+    const screamText = document.getElementById('screamText');
     const messageText = document.getElementById('messageText');
-    const recordingIndicator = document.getElementById('recordingIndicator');
-    const flash = document.getElementById('flash');
+    const lastScreamEl = document.getElementById('lastScream');
+    const volumeSlider = document.getElementById('volumeSlider');
+    const volumeValue = document.getElementById('volumeValue');
+    const meterFill = document.getElementById('meterFill');
+    const screenFlash = document.getElementById('screenFlash');
+    const backgroundAmbiance = document.getElementById('backgroundAmbiance');
+    const heartbeat = document.getElementById('heartbeat');
 
-    // Audio elements
-    const creepyVoice = document.getElementById('creepyVoice');
-    const backgroundMusic = document.getElementById('backgroundMusic');
-    const tapSound = document.getElementById('tapSound');
-    const scareSound = document.getElementById('scareSound');
-
-    // Phrases database
-    const creepyPhrases = [
-        "Rayane, I'm under your bed",
-        "I can see you sleeping",
-        "Don't look under the bed",
-        "I'm right behind you",
-        "Your bed is my home now",
-        "Shhh... go back to sleep",
-        "I watch you every night",
-        "We're closer than you think",
-        "Your shadow isn't yours",
-        "I'm in your closet too"
-    ];
-
-    // Initialize game
-    function initGame() {
-        // Start timer
-        updateTimer();
-        setInterval(updateTimer, 1000);
-        
-        // Start background music (quiet)
-        backgroundMusic.volume = 0.2;
-        backgroundMusic.play().catch(e => {
-            console.log('Music autoplay blocked. User needs to interact first.');
+    // Initialize all sounds
+    function initializeSounds() {
+        // Set initial volumes
+        Object.values(screamSounds).forEach(sound => {
+            sound.volume = gameState.currentVolume;
         });
         
-        // Create floating eyes
-        createFloatingEyes();
+        backgroundAmbiance.volume = 0.2;
+        heartbeat.volume = 0;
         
-        // Update initial message
-        updateMessage("Tap the cat to start!");
+        // Start ambiance
+        backgroundAmbiance.play().catch(e => {
+            console.log("Ambiance autoplay blocked - will play on first interaction");
+        });
+        
+        // Create audio unlocker
+        const unlockAudio = () => {
+            const silentAudio = new Audio();
+            silentAudio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEAQB8AAEAfAAABAAgAZGF0YQ';
+            silentAudio.volume = 0.001;
+            silentAudio.play().then(() => {
+                console.log("Audio context unlocked!");
+                showMessage("Audio ready! Tap the screaming face!");
+            }).catch(console.error);
+        };
+        
+        // Unlock on first click
+        document.addEventListener('click', function unlock() {
+            unlockAudio();
+            document.removeEventListener('click', unlock);
+        }, { once: true });
     }
 
-    // Update timer display
-    function updateTimer() {
-        const elapsed = Date.now() - gameState.startTime;
-        const minutes = Math.floor(elapsed / 60000);
-        const seconds = Math.floor((elapsed % 60000) / 1000);
-        timerEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    }
-
-    // Tap handler - MAIN GAME MECHANIC
-    creepyTom.addEventListener('click', function(e) {
-        e.stopPropagation();
-        handleTap();
-    });
-
-    // Button tap handler
-    document.getElementById('tapBtn').addEventListener('click', handleTap);
-
-    function handleTap() {
-        // Increment taps
-        gameState.taps++;
-        tapCountEl.textContent = gameState.taps;
+    // Play a SCREAM
+    function playScream(type = 'woman1', intensity = 1) {
+        if (gameState.isScreaming) return;
         
-        // Increase creep level every 5 taps
-        if (gameState.taps % 5 === 0 && gameState.creepLevel < 10) {
-            gameState.creepLevel++;
-            creepLevelEl.textContent = gameState.creepLevel;
-            updateCreepyAppearance();
+        gameState.isScreaming = true;
+        gameState.totalScreams++;
+        gameState.totalScreamIntensity += intensity;
+        
+        // Update scream combo
+        gameState.screamCombo++;
+        if (intensity > gameState.loudestScream) {
+            gameState.loudestScream = intensity;
         }
         
-        // Play tap sound
-        playTapSound();
+        // Update display
+        updateStats();
         
-        // Animate character
-        animateTap();
+        // Get random phrase for this scream type
+        const phrases = screamPhrases[type];
+        const phrase = phrases[Math.floor(Math.random() * phrases.length)];
         
-        // Make Tom say something creepy
-        const phrase = getRandomCreepyPhrase();
-        gameState.lastPhrase = phrase;
-        speakCreepyPhrase(phrase);
+        // Show in bubble
+        showScreamBubble(phrase);
+        lastScreamEl.textContent = phrase;
+        gameState.lastScreamType = type;
         
-        // Show in thought bubble
-        showThoughtBubble(phrase);
-        
-        // Update message
-        updateMessage(`He said: "${phrase}"`);
-        
-        // Random scare effect occasionally
-        if (Math.random() < 0.2) {
-            randomScareEffect();
-        }
-    }
-
-    // Voice recording handler
-    document.getElementById('voiceBtn').addEventListener('click', function() {
-        if (!gameState.isRecording) {
-            startVoiceRecording();
-        } else {
-            stopVoiceRecording();
-        }
-    });
-
-    // Scare mode handler
-    document.getElementById('scareBtn').addEventListener('click', function() {
-        gameState.isScareMode = !gameState.isScareMode;
-        const btn = document.getElementById('scareBtn');
-        
-        if (gameState.isScareMode) {
-            btn.innerHTML = '<i class="fas fa-skull"></i> NORMAL MODE';
-            btn.style.background = 'linear-gradient(45deg, #ff0000, #ff6b6b)';
-            updateMessage("SCARE MODE ACTIVATED! Things just got creepier...");
-            scareSound.play();
-            flashScreen();
-        } else {
-            btn.innerHTML = '<i class="fas fa-ghost"></i> SCARE MODE';
-            btn.style.background = 'linear-gradient(45deg, #330000, #8b0000)';
-            updateMessage("Back to normal... for now.");
+        // Play the scream sound
+        const screamSound = screamSounds[type];
+        if (screamSound) {
+            screamSound.currentTime = 0;
+            screamSound.volume = gameState.currentVolume * intensity;
+            screamSound.play().catch(e => {
+                console.log("Scream blocked - user needs to interact");
+                showMessage("Click the SCREAM NOW button to play sound!");
+            });
         }
         
-        updateCreepyAppearance();
-    });
-
-    // Reset handler
-    document.getElementById('resetBtn').addEventListener('click', function() {
-        if (confirm("Reset the game? This will clear all taps and creep level.")) {
-            gameState.taps = 0;
-            gameState.creepLevel = 1;
-            gameState.isScareMode = false;
-            
-            tapCountEl.textContent = '0';
-            creepLevelEl.textContent = '1';
-            
-            document.getElementById('scareBtn').innerHTML = '<i class="fas fa-ghost"></i> SCARE MODE';
-            document.getElementById('scareBtn').style.background = 'linear-gradient(45deg, #330000, #8b0000)';
-            
-            updateCreepyAppearance();
-            updateMessage("Game reset. Start tapping again!");
-            showThoughtBubble("I'm back...");
-        }
-    });
-
-    // Item click handlers
-    document.getElementById('bedItem').addEventListener('click', function() {
-        speakCreepyPhrase("*creaking bed sounds* I'm right under here...");
-        updateMessage("You checked under the bed. Bad idea.");
-    });
-
-    document.getElementById('knifeItem').addEventListener('click', function() {
-        const phrase = "I have something sharp for you...";
-        speakCreepyPhrase(phrase);
-        updateMessage("That sounded sharp and pointy!");
-        playScareSound();
-    });
-
-    document.getElementById('musicItem').addEventListener('click', function() {
-        if (backgroundMusic.paused) {
-            backgroundMusic.play();
-            updateMessage("Creepy music playing...");
-        } else {
-            backgroundMusic.pause();
-            updateMessage("Music stopped. Too quiet now...");
-        }
-    });
-
-    document.getElementById('lightItem').addEventListener('click', function() {
-        document.body.classList.toggle('lights-off');
-        if (document.body.classList.contains('lights-off')) {
-            updateMessage("Lights off! Can you see him?");
-            flashScreen(0.1);
-        } else {
-            updateMessage("Lights on. But he's still there...");
-        }
-    });
-
-    // Speak creepy phrase
-    function speakCreepyPhrase(phrase) {
-        // Use Text-to-Speech API
-        if ('speechSynthesis' in window) {
-            const utterance = new SpeechSynthesisUtterance(phrase);
-            
-            // Make voice creepy based on creep level
-            utterance.rate = 0.7 + (gameState.creepLevel * 0.03);
-            utterance.pitch = 0.5 - (gameState.creepLevel * 0.05);
-            utterance.volume = 0.8;
-            
-            // Get available voices
-            const voices = speechSynthesis.getVoices();
-            if (voices.length > 0) {
-                // Prefer male/deep voices
-                const deepVoice = voices.find(v => 
-                    v.name.includes('Google UK English Male') || 
-                    v.name.includes('Microsoft David') ||
-                    v.name.toLowerCase().includes('male')
-                );
-                
-                if (deepVoice) {
-                    utterance.voice = deepVoice;
-                }
-            }
-            
-            // Speak
-            speechSynthesis.speak(utterance);
-            
-            // Animate mouth while speaking
-            animateMouthSpeaking();
-        } else {
-            // Fallback to playing creepy sound
-            creepyVoice.currentTime = 0;
-            creepyVoice.play();
-        }
-    }
-
-    // Get random creepy phrase
-    function getRandomCreepyPhrase() {
-        if (Math.random() < 0.3 && gameState.taps > 0) {
-            // 30% chance to repeat last phrase
-            return gameState.lastPhrase;
+        // Visual effects based on intensity
+        triggerScreamEffects(intensity);
+        
+        // Increase fear level
+        gameState.fearLevel = Math.min(100, gameState.fearLevel + (intensity * 5));
+        
+        // Update scream level (every 3 screams)
+        if (gameState.totalScreams % 3 === 0 && gameState.screamLevel < 10) {
+            gameState.screamLevel++;
+            showMessage(`SCREAM LEVEL UP! Now at level ${gameState.screamLevel}`);
+            increaseHeartbeat();
         }
         
-        // Otherwise random phrase
-        const index = Math.floor(Math.random() * creepyPhrases.length);
-        return creepyPhrases[index];
-    }
-
-    // Show thought bubble
-    function showThoughtBubble(text) {
-        bubbleText.textContent = text;
-        thoughtBubble.style.opacity = '1';
-        
-        // Hide after 3 seconds
+        // Reset screaming flag after sound completes
         setTimeout(() => {
-            thoughtBubble.style.opacity = '0';
-        }, 3000);
+            gameState.isScreaming = false;
+        }, 2000);
+        
+        return intensity;
     }
 
-    // Update message
-    function updateMessage(text) {
-        messageText.innerHTML = text;
-    }
-
-    // Animate on tap
-    function animateTap() {
-        // Bounce effect
-        creepyTom.style.transform = 'scale(0.95)';
+    // Trigger visual effects for scream
+    function triggerScreamEffects(intensity) {
+        // Screen flash
+        const flashIntensity = Math.min(0.8, intensity * 0.3);
+        screenFlash.style.opacity = flashIntensity;
         setTimeout(() => {
-            creepyTom.style.transform = 'scale(1)';
+            screenFlash.style.opacity = 0;
         }, 100);
         
-        // Close eyes briefly
+        // Character animation
+        screamingTom.style.animation = 'shake-hard 0.3s';
+        setTimeout(() => {
+            screamingTom.style.animation = '';
+        }, 300);
+        
+        // Mouth animation
+        const mouth = document.querySelector('.screaming-mouth');
+        mouth.style.height = `${70 + (intensity * 30)}px`;
+        setTimeout(() => {
+            mouth.style.height = '70px';
+        }, 500);
+        
+        // Eyes animation
         const eyes = document.querySelectorAll('.eye');
         eyes.forEach(eye => {
             eye.style.height = '10px';
             setTimeout(() => {
-                eye.style.height = '70px';
+                eye.style.height = '90px';
             }, 200);
         });
         
-        // Open mouth
-        const mouth = document.querySelector('.mouth');
-        mouth.style.height = '60px';
-        setTimeout(() => {
-            mouth.style.height = '40px';
-        }, 300);
+        // Update intensity meter
+        const meterPercent = Math.min(100, intensity * 25);
+        meterFill.style.width = `${meterPercent}%`;
+        
+        // Create scream particles
+        createScreamParticles(intensity);
     }
 
-    // Animate mouth while speaking
-    function animateMouthSpeaking() {
-        const mouth = document.querySelector('.mouth');
-        let count = 0;
-        const max = 6;
+    // Create visual scream particles
+    function createScreamParticles(intensity) {
+        const container = document.querySelector('.scream-particles');
+        const particleCount = Math.min(50, intensity * 20);
         
-        const interval = setInterval(() => {
-            mouth.style.height = count % 2 === 0 ? '60px' : '30px';
-            count++;
+        for (let i = 0; i < particleCount; i++) {
+            const particle = document.createElement('div');
+            particle.style.cssText = `
+                position: fixed;
+                width: ${Math.random() * 20 + 5}px;
+                height: ${Math.random() * 20 + 5}px;
+                background: ${Math.random() > 0.5 ? '#ff0000' : '#ff6b6b'};
+                border-radius: 50%;
+                left: ${Math.random() * 100}vw;
+                top: ${Math.random() * 100}vh;
+                opacity: ${Math.random() * 0.5 + 0.3};
+                animation: scream-particle ${Math.random() * 2 + 1}s forwards;
+                z-index: 100;
+                pointer-events: none;
+            `;
             
-            if (count >= max) {
-                clearInterval(interval);
-                mouth.style.height = '40px';
+            // Add keyframes for particle animation
+            const keyframes = `
+                @keyframes scream-particle {
+                    0% {
+                        transform: translate(0, 0) scale(1);
+                        opacity: 0.8;
+                    }
+                    100% {
+                        transform: translate(${Math.random() * 200 - 100}px, ${Math.random() * 200 - 100}px) scale(0);
+                        opacity: 0;
+                    }
+                }
+            `;
+            
+            // Add styles if not already added
+            if (!document.getElementById('particle-styles')) {
+                const style = document.createElement('style');
+                style.id = 'particle-styles';
+                style.textContent = keyframes;
+                document.head.appendChild(style);
             }
-        }, 200);
+            
+            container.appendChild(particle);
+            
+            // Remove particle after animation
+            setTimeout(() => {
+                if (particle.parentNode) {
+                    particle.parentNode.removeChild(particle);
+                }
+            }, 2000);
+        }
     }
 
-    // Update creepy appearance based on level
-    function updateCreepyAppearance() {
-        const face = document.querySelector('.face');
-        const eyes = document.querySelectorAll('.eye');
-        const body = document.querySelector('.body');
-        const glow = document.querySelector('.glow');
+    // Show scream bubble
+    function showScreamBubble(text) {
+        screamText.textContent = text;
+        screamBubble.style.opacity = '1';
         
-        // Calculate intensity based on creep level and scare mode
-        const intensity = gameState.isScareMode ? 
-            gameState.creepLevel * 2 : 
-            gameState.creepLevel;
+        // Hide after 2 seconds
+        setTimeout(() => {
+            screamBubble.style.opacity = '0';
+        }, 2000);
+    }
+
+    // Update all stats
+    function updateStats() {
+        tapCountEl.textContent = gameState.taps;
+        screamLevelEl.textContent = gameState.screamLevel;
+        fearLevelEl.textContent = `${gameState.fearLevel}%`;
+        totalScreamsEl.textContent = gameState.totalScreams;
+        loudestScreamEl.textContent = gameState.loudestScream.toFixed(1);
+        screamComboEl.textContent = gameState.screamCombo;
         
-        // Update colors and effects
-        const redValue = Math.min(255, 100 + (intensity * 15));
-        const glowSize = 100 + (intensity * 20);
+        const avg = gameState.totalScreams > 0 ? 
+            (gameState.totalScreamIntensity / gameState.totalScreams).toFixed(1) : 0;
+        avgScreamEl.textContent = avg;
+    }
+
+    // Show message
+    function showMessage(text) {
+        messageText.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${text}`;
+    }
+
+    // Increase heartbeat sound
+    function increaseHeartbeat() {
+        if (heartbeat.volume < 0.5) {
+            heartbeat.volume += 0.1;
+            if (heartbeat.paused) {
+                heartbeat.play();
+            }
+        }
+    }
+
+    // Decrease heartbeat
+    function decreaseHeartbeat() {
+        if (heartbeat.volume > 0) {
+            heartbeat.volume = Math.max(0, heartbeat.volume - 0.1);
+            if (heartbeat.volume === 0) {
+                heartbeat.pause();
+            }
+        }
+    }
+
+    // Event Listeners
+
+    // Tap the screaming face
+    screamingTom.addEventListener('click', function(e) {
+        e.stopPropagation();
+        gameState.taps++;
         
-        // Apply effects
-        face.style.boxShadow = `inset 0 0 ${30 + intensity * 5}px #000, 0 0 ${30 + intensity * 10}px rgb(${redValue}, 0, 0)`;
+        // Play scream with random intensity
+        const intensity = 1 + (Math.random() * gameState.screamLevel * 0.3);
+        playScream('woman1', intensity);
         
-        eyes.forEach(eye => {
-            eye.style.background = `rgb(${redValue}, ${Math.max(0, 100 - intensity * 10)}, 0)`;
-            eye.style.boxShadow = `inset 0 0 20px #000, 0 0 ${20 + intensity * 5}px rgb(${redValue}, 0, 0)`;
+        showMessage(`Scream intensity: ${intensity.toFixed(1)}x`);
+    });
+
+    // SCREAM NOW button
+    document.getElementById('screamBtn').addEventListener('click', function() {
+        const intensity = 1 + (Math.random() * gameState.screamLevel * 0.4);
+        playScream('woman1', intensity);
+        showMessage(`LOUD WOMAN SCREAM! Intensity: ${intensity.toFixed(1)}x`);
+    });
+
+    // Whisper button
+    document.getElementById('whisperBtn').addEventListener('click', function() {
+        playScream('whisper', 0.5);
+        showMessage("Creepy whisper... shhh...");
+        decreaseHeartbeat();
+    });
+
+    // Under Bed button
+    document.getElementById('bedBtn').addEventListener('click', function() {
+        playScream('bed', 0.7);
+        showMessage("*creaking sounds from under the bed*");
+    });
+
+    // Max Terror button
+    document.getElementById('terrorBtn').addEventListener('click', function() {
+        const intensity = 2 + (Math.random() * gameState.screamLevel * 0.5);
+        playScream('terror', intensity);
+        showMessage(`MAX TERROR! Intensity: ${intensity.toFixed(1)}x`);
+        increaseHeartbeat();
+    });
+
+    // Scream library buttons
+    document.querySelectorAll('.scream-option').forEach(button => {
+        button.addEventListener('click', function() {
+            const screamType = this.getAttribute('data-scream');
+            const intensity = screamType === 'terror' ? 1.8 : 
+                             screamType === 'woman2' ? 1.3 : 1;
+            
+            playScream(screamType, intensity);
+            showMessage(`Playing: ${this.textContent}`);
+        });
+    });
+
+    // Volume slider
+    volumeSlider.addEventListener('input', function() {
+        const volume = this.value / 100;
+        gameState.currentVolume = volume;
+        volumeValue.textContent = `${this.value}%`;
+        
+        // Update all scream volumes
+        Object.values(screamSounds).forEach(sound => {
+            sound.volume = volume;
         });
         
-        glow.style.width = `${glowSize}px`;
-        glow.style.height = `${glowSize}px`;
+        // Update background ambiance
+        backgroundAmbiance.volume = volume * 0.3;
         
-        // If scare mode, add shake animation
-        if (gameState.isScareMode) {
-            creepyTom.style.animation = 'shake 0.5s infinite';
-        } else {
-            creepyTom.style.animation = '';
-        }
-    }
-
-    // Play tap sound
-    function playTapSound() {
-        tapSound.currentTime = 0;
-        tapSound.volume = 0.3;
-        tapSound.play();
-    }
-
-    // Play scare sound
-    function playScareSound() {
-        scareSound.currentTime = 0;
-        scareSound.volume = 0.5;
-        scareSound.play();
-    }
-
-    // Flash screen
-    function flashScreen(intensity = 0.7) {
-        flash.style.opacity = intensity;
-        setTimeout(() => {
-            flash.style.opacity = 0;
-        }, 200);
-    }
-
-    // Random scare effect
-    function randomScareEffect() {
-        if (Math.random() < 0.3) {
-            flashScreen(0.3);
-        }
+        // Visual feedback
+        const eyes = document.querySelectorAll('.eye');
+        const glowSize = 30 + (volume * 70);
         
-        if (Math.random() < 0.2 && gameState.creepLevel > 3) {
-            playScareSound();
-        }
-    }
+        eyes.forEach(eye => {
+            eye.style.boxShadow = `
+                inset 0 0 30px #000,
+                0 0 ${20 + volume * 40}px #ff0000,
+                0 0 ${40 + volume * 60}px #ff0000
+            `;
+        });
+    });
 
-    // Voice recording functions
-    function startVoiceRecording() {
-        updateMessage("Listening... say something!");
-        recordingIndicator.style.display = 'block';
-        gameState.isRecording = true;
-        
-        // In a real app, you would use the Web Audio API here
-        // For this demo, we'll simulate it
-        setTimeout(() => {
-            if (gameState.isRecording) {
-                const simulatedText = "I heard that...";
-                speakCreepyPhrase(simulatedText);
-                showThoughtBubble(simulatedText);
-                updateMessage(`He repeated: "${simulatedText}"`);
-                stopVoiceRecording();
+    // Random auto-screams (for extra creepiness)
+    function startRandomScreams() {
+        setInterval(() => {
+            if (Math.random() < 0.1 && !gameState.isScreaming) { // 10% chance
+                const types = ['whisper', 'bed', 'woman1'];
+                const type = types[Math.floor(Math.random() * types.length)];
+                const intensity = type === 'whisper' ? 0.3 : 0.6;
+                
+                playScream(type, intensity);
+                showMessage("Random scream... he's watching...");
             }
-        }, 3000);
+        }, 10000); // Every 10 seconds
     }
 
-    function stopVoiceRecording() {
-        recordingIndicator.style.display = 'none';
-        gameState.isRecording = false;
-        updateMessage("Ready for more taps!");
+    // Initialize game
+    function initGame() {
+        initializeSounds();
+        updateStats();
+        startRandomScreams();
+        showMessage("Tap the SCREAMING FACE to hear woman screams!");
+        
+        // Create blood effect particles
+        createBloodEffect();
+        
+        console.log(`
+        ============================================
+        SCREAMING TOM GAME - READY!
+        ============================================
+        Features:
+        • REAL WOMAN SCREAMS (not text-to-speech)
+        • Intensity meter
+        • Scream statistics
+        • Volume control
+        • Random auto-screams
+        • Fear level tracking
+        • Visual scream effects
+        ============================================
+        `);
     }
 
-    // Create floating eyes in background
-    function createFloatingEyes() {
-        const container = document.querySelector('.floating-eyes');
-        for (let i = 0; i < 12; i++) {
-            const eye = document.createElement('div');
-            eye.style.cssText = `
+    // Create blood effect in background
+    function createBloodEffect() {
+        const container = document.querySelector('.blood-effect');
+        for (let i = 0; i < 20; i++) {
+            const blood = document.createElement('div');
+            blood.style.cssText = `
                 position: absolute;
-                width: ${Math.random() * 40 + 20}px;
-                height: ${Math.random() * 40 + 20}px;
-                background: radial-gradient(circle, #ff0000 30%, #8b0000 70%);
-                border-radius: 50%;
-                opacity: ${Math.random() * 0.3 + 0.1};
+                width: ${Math.random() * 100 + 50}px;
+                height: ${Math.random() * 100 + 50}px;
+                background: radial-gradient(circle, rgba(139,0,0,0.3) 0%, transparent 70%);
                 left: ${Math.random() * 100}%;
                 top: ${Math.random() * 100}%;
-                animation: float ${Math.random() * 10 + 10}s infinite ease-in-out ${Math.random() * 5}s;
-                box-shadow: 0 0 20px #ff0000;
+                opacity: ${Math.random() * 0.2 + 0.1};
+                pointer-events: none;
+                z-index: 0;
             `;
-            container.appendChild(eye);
+            container.appendChild(blood);
         }
     }
 
-    // Add some CSS for lights-off mode
-    const style = document.createElement('style');
-    style.textContent = `
-        .lights-off {
-            background: #000 !important;
-            filter: brightness(0.3);
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        switch(e.key.toLowerCase()) {
+            case ' ':
+            case 's':
+                const intensity = 1 + (Math.random() * gameState.screamLevel * 0.3);
+                playScream('woman1', intensity);
+                break;
+            case 'w':
+                playScream('whisper', 0.5);
+                break;
+            case 'b':
+                playScream('bed', 0.7);
+                break;
+            case 't':
+                playScream('terror', 1.8);
+                break;
+            case 'arrowup':
+                volumeSlider.value = Math.min(100, parseInt(volumeSlider.value) + 10);
+                volumeSlider.dispatchEvent(new Event('input'));
+                break;
+            case 'arrowdown':
+                volumeSlider.value = Math.max(0, parseInt(volumeSlider.value) - 10);
+                volumeSlider.dispatchEvent(new Event('input'));
+                break;
         }
-        
-        .lights-off .character {
-            filter: brightness(1.5) contrast(1.5);
-        }
-        
-        .lights-off .eye {
-            animation: none !important;
-            box-shadow: 0 0 40px #ff0000 !important;
-        }
-    `;
-    document.head.appendChild(style);
-
-    // Load voices for speech synthesis
-    speechSynthesis.getVoices();
-    setTimeout(() => speechSynthesis.getVoices(), 1000);
+    });
 
     // Initialize the game
     initGame();
-
-    // Instructions in console
-    console.log(`
-    ========================================
-    CREEPY TOM GAME - CONTROLS
-    ========================================
-    TAP THE CAT: He repeats creepy phrases
-    SAY SOMETHING: He tries to repeat you
-    SCARE MODE: Makes everything creepier
-    ITEMS: Click for extra effects
-    ========================================
-    Built-in phrases include:
-    "Rayane, I'm under your bed"
-    "I can see you sleeping"
-    "Don't look under the bed"
-    ...and more!
-    ========================================
-    `);
 });
